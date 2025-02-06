@@ -1,0 +1,172 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="menu-admin">
+    <h1>Speisekarte verwalten</h1>
+
+    <!-- Neues Item hinzufügen -->
+    <div class="add-item-section">
+        <h2>Neues Item hinzufügen</h2>
+        <form action="{{ url_for('admin.add_menu_item') }}" method="POST">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Beschreibung:</label>
+                <textarea id="description" name="description"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Preis (€):</label>
+                <input type="number" id="price" name="price" step="0.10" required>
+            </div>
+
+            <div class="form-group">
+                <label for="category_id">Kategorie:</label>
+                <select id="category_id" name="category_id" required>
+                    <optgroup label="Speisen">
+                        {% for category in categories %}
+                            {% if not category.is_drink_category %}
+                                <option value="{{ category.id }}">{{ category.display_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Getränke">
+                        {% for category in categories %}
+                            {% if category.is_drink_category %}
+                                <option value="{{ category.id }}">{{ category.display_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="unit">Einheit (z.B. "0,5l" für Getränke):</label>
+                <input type="text" id="unit" name="unit">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Hinzufügen</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Speisen -->
+    <div class="items-section">
+        <h2>Speisen</h2>
+        {% for category in categories %}
+            {% if not category.is_drink_category %}
+                <div class="category-section">
+                    <h3>{{ category.display_name }}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Beschreibung</th>
+                                <th>Preis</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in food_items %}
+                                {% if item.category_id == category.id %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.description }}</td>
+                                        <td>{{ "%.2f"|format(item.price) }} €</td>
+                                        <td>
+                                            <form action="{{ url_for('admin.delete_menu_item', id=item.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Getränke -->
+    <div class="items-section">
+        <h2>Getränke</h2>
+        {% for category in categories %}
+            {% if category.is_drink_category %}
+                <div class="category-section">
+                    <h3>{{ category.display_name }}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Menge</th>
+                                <th>Preis</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in drink_items %}
+                                {% if item.category_id == category.id %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.unit }}</td>
+                                        <td>{{ "%.2f"|format(item.price) }} €</td>
+                                        <td>
+                                            <form action="{{ url_for('admin.delete_menu_item', id=item.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.menu-admin {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.add-item-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.items-section {
+    margin-bottom: 40px;
+}
+
+.category-section {
+    margin-bottom: 30px;
+}
+
+h1 {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+h2 {
+    color: #c17817;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #555;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #c17817;
+}
+</style>
+{% endblock %}

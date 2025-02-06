@@ -1,48 +1,37 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="container">
+<div class="opening-hours-admin">
     <h1>Öffnungszeiten verwalten</h1>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
 
-    <form method="POST" action="{{ url_for('admin.update_opening_hours') }}">
-        <div class="opening-hours-form">
+    <form action="{{ url_for('admin.update_opening_hours') }}" method="POST">
+        <div class="hours-grid">
             {% for hour in opening_hours %}
-            <div class="opening-hours-item">
+            <div class="day-card">
                 <h3>{{ hour.day_display }}</h3>
-                <input type="hidden" name="ids[]" value="{{ hour.id }}">
                 
                 <div class="form-group">
                     <label>
-                        <input type="checkbox" name="closed[]" value="{{ hour.id }}" {% if hour.closed %}checked{% endif %}>
+                        <input type="checkbox" name="closed" value="{{ hour.id }}" 
+                               {% if hour.closed %}checked{% endif %}
+                               onchange="toggleTimeInputs(this)">
                         Ruhetag
                     </label>
                 </div>
                 
-                <div class="time-inputs">
+                <div class="time-inputs" {% if hour.closed %}style="opacity: 0.5;"{% endif %}>
                     <div class="form-group">
-                        <label for="open_time_{{ hour.id }}">Öffnet um:</label>
+                        <label>Öffnet um:</label>
                         <input type="time" 
-                               id="open_time_{{ hour.id }}" 
-                               name="open_times[]" 
+                               name="open_time_{{ hour.id }}" 
                                value="{{ hour.open_time }}"
                                {% if hour.closed %}disabled{% endif %}>
                     </div>
                     
                     <div class="form-group">
-                        <label for="close_time_{{ hour.id }}">Schließt um:</label>
+                        <label>Schließt um:</label>
                         <input type="time" 
-                               id="close_time_{{ hour.id }}" 
-                               name="close_times[]" 
+                               name="close_time_{{ hour.id }}" 
                                value="{{ hour.close_time }}"
                                {% if hour.closed %}disabled{% endif %}>
                     </div>
@@ -50,22 +39,79 @@
             </div>
             {% endfor %}
         </div>
-        
-        <button type="submit" class="btn btn-primary">Speichern</button>
-        <a href="{{ url_for('admin.index') }}" class="btn btn-danger">Abbrechen</a>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Speichern</button>
+            <a href="{{ url_for('admin.index') }}" class="btn btn-danger">Abbrechen</a>
+        </div>
     </form>
 </div>
 
+<style>
+.opening-hours-admin {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.day-card {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.day-card h3 {
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #c17817;
+}
+
+.time-inputs {
+    margin-top: 15px;
+    transition: opacity 0.3s;
+}
+
+input[type="time"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+</style>
+
 <script>
-document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const item = this.closest('.opening-hours-item');
-        const timeInputs = item.querySelectorAll('input[type="time"]');
-        
-        timeInputs.forEach(input => {
-            input.disabled = this.checked;
-        });
-    });
-});
+function toggleTimeInputs(checkbox) {
+    const card = checkbox.closest('.day-card');
+    const timeInputs = card.querySelector('.time-inputs');
+    const inputs = timeInputs.querySelectorAll('input[type="time"]');
+    
+    if (checkbox.checked) {
+        timeInputs.style.opacity = '0.5';
+        inputs.forEach(input => input.disabled = true);
+    } else {
+        timeInputs.style.opacity = '1';
+        inputs.forEach(input => input.disabled = false);
+    }
+}
 </script>
 {% endblock %}
