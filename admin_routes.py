@@ -24,68 +24,43 @@ def menu():
 @login_required
 def add_menu_item():
     try:
-        # Bestimme die Kategorie und ob es ein Getränk ist
-        category_id = int(request.form['category_id'])
+        # Get category and determine if it's a drink
+        category_id = int(request.form.get('category_id'))
         category = MenuCategory.query.get(category_id)
         if not category:
             raise ValueError('Ungültige Kategorie')
-        
-        # Hole den höchsten order-Wert für diese Kategorie
+
+        # Get the highest order value for this category
         max_order = db.session.query(db.func.max(MenuItem.order)).filter_by(
             category_id=category_id
-        ).scalar() or 0
+        ).scalar()
         
-        # Erstelle das neue Item
-        item = MenuItem(
-            name=request.form['name'],
+        # If no items exist yet, start with 1
+        new_order = (max_order or 0) + 1
+
+        # Create new item
+        new_item = MenuItem(
+            name=request.form.get('name'),
             description=request.form.get('description', ''),
-            price=float(request.form['price']),
+            price=float(request.form.get('price')),
             category_id=category_id,
             is_drink=category.is_drink_category,
             unit=request.form.get('unit', ''),
             active=True,
-            order=max_order + 1  # Setze den order-Wert auf den nächsten verfügbaren
+            order=new_order
         )
-        db.session.add(item)
+
+        db.session.add(new_item)
         db.session.commit()
         flash('Menü-Item erfolgreich hinzugefügt!', 'success')
+        
     except ValueError as e:
         db.session.rollback()
         flash(f'Fehler beim Hinzufügen: {str(e)}', 'error')
     except Exception as e:
         db.session.rollback()
-        flash(f'Fehler beim Hinzufügen: Ein unerwarteter Fehler ist aufgetreten', 'error')
-    return redirect(url_for('admin.menu'))
-
-@admin_bp.route('/menu/edit/<int:id>', methods=['POST'])
-@login_required
-def edit_menu_item(id):
-    try:
-        item = MenuItem.query.get_or_404(id)
-        
-        # Bestimme die neue Kategorie und ob es ein Getränk ist
-        category_id = int(request.form['category_id'])
-        category = MenuCategory.query.get(category_id)
-        if not category:
-            raise ValueError('Ungültige Kategorie')
-        
-        # Update die Werte
-        item.name = request.form['name']
-        item.description = request.form.get('description', '')
-        item.price = float(request.form['price'])
-        item.category_id = category_id
-        item.is_drink = category.is_drink_category
-        item.unit = request.form.get('unit', '')
-        item.active = True
-        
-        db.session.commit()
-        flash('Menü-Item erfolgreich aktualisiert!', 'success')
-    except ValueError as e:
-        db.session.rollback()
-        flash(f'Fehler beim Aktualisieren: {str(e)}', 'error')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Fehler beim Aktualisieren: Ein unerwarteter Fehler ist aufgetreten', 'error')
+        flash('Ein unerwarteter Fehler ist aufgetreten. Bitte überprüfen Sie alle Eingaben.', 'error')
+    
     return redirect(url_for('admin.menu'))
 
 @admin_bp.route('/menu/delete/<int:id>', methods=['POST'])
@@ -98,7 +73,7 @@ def delete_menu_item(id):
         flash('Menü-Item erfolgreich gelöscht!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash('Fehler beim Löschen: Ein unerwarteter Fehler ist aufgetreten', 'error')
+        flash('Fehler beim Löschen des Items.', 'error')
     return redirect(url_for('admin.menu'))
 
 @admin_bp.route('/opening-hours')
@@ -114,10 +89,8 @@ def update_opening_hours():
         closed_days = request.form.getlist('closed')
         
         for hour in OpeningHours.query.all():
-            # Prüfe, ob der Tag geschlossen ist
             hour.closed = str(hour.id) in closed_days
             
-            # Wenn der Tag nicht geschlossen ist, update die Zeiten
             if not hour.closed:
                 open_time = request.form.get(f'open_time_{hour.id}')
                 close_time = request.form.get(f'close_time_{hour.id}')
@@ -132,8 +105,8 @@ def update_opening_hours():
         flash('Öffnungszeiten erfolgreich aktualisiert!', 'success')
     except ValueError as e:
         db.session.rollback()
-        flash(f'Fehler beim Speichern: {str(e)}', 'error')
+        flash(str(e), 'error')
     except Exception as e:
         db.session.rollback()
-        flash('Fehler beim Speichern: Ein unerwarteter Fehler ist aufgetreten', 'error')
+        flash('Ein unerwarteter Fehler ist aufgetreten.', 'error')
     return redirect(url_for('admin.opening_hours'))

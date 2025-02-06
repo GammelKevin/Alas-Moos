@@ -4,32 +4,37 @@
 <div class="menu-page">
     <!-- Hero Section -->
     <div class="menu-hero">
-        <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1>Unsere Speisekarte</h1>
-            <p>Traditionelle griechische Küche in Moos</p>
+            <p>Traditionelle griechische Küche</p>
         </div>
     </div>
 
     <div class="menu-container">
         <!-- Speisen -->
-        <section class="menu-section">
-            <h2>Speisen</h2>
+        <div class="menu-section food-section">
+            <div class="section-header">
+                <h2>Speisen</h2>
+                <div class="greek-pattern"></div>
+            </div>
+
             {% for category in categories %}
                 {% if not category.is_drink_category %}
                     <div class="category-section">
                         <h3>{{ category.display_name }}</h3>
                         <div class="menu-items">
-                            {% for item in menu_items %}
-                                {% if item.category_id == category.id %}
+                            {% for item in food_items %}
+                                {% if item.category_id == category.id and item.active %}
                                     <div class="menu-item">
-                                        <div class="item-header">
-                                            <h4>{{ item.name }}</h4>
-                                            <span class="price">{{ "%.2f"|format(item.price) }} €</span>
+                                        <div class="item-content">
+                                            <div class="item-header">
+                                                <h4>{{ item.name }}</h4>
+                                                <div class="price-tag">{{ "%.2f"|format(item.price) }} €</div>
+                                            </div>
+                                            {% if item.description %}
+                                                <p class="description">{{ item.description }}</p>
+                                            {% endif %}
                                         </div>
-                                        {% if item.description %}
-                                            <p class="description">{{ item.description }}</p>
-                                        {% endif %}
                                     </div>
                                 {% endif %}
                             {% endfor %}
@@ -37,31 +42,34 @@
                     </div>
                 {% endif %}
             {% endfor %}
-        </section>
+        </div>
 
         <!-- Getränke -->
-        <section class="menu-section">
-            <h2>Getränke</h2>
+        <div class="menu-section drinks-section">
+            <div class="section-header">
+                <h2>Getränke</h2>
+                <div class="greek-pattern"></div>
+            </div>
+
             {% for category in categories %}
                 {% if category.is_drink_category %}
                     <div class="category-section">
                         <h3>{{ category.display_name }}</h3>
                         <div class="menu-items">
                             {% for item in drink_items %}
-                                {% if item.category_id == category.id %}
+                                {% if item.category_id == category.id and item.active %}
                                     <div class="menu-item">
-                                        <div class="item-header">
-                                            <h4>
-                                                {{ item.name }}
-                                                {% if item.unit %}
-                                                    <span class="unit">({{ item.unit }})</span>
-                                                {% endif %}
-                                            </h4>
-                                            <span class="price">{{ "%.2f"|format(item.price) }} €</span>
+                                        <div class="item-content">
+                                            <div class="item-header">
+                                                <h4>
+                                                    {{ item.name }}
+                                                    {% if item.unit %}
+                                                        <span class="unit">({{ item.unit }})</span>
+                                                    {% endif %}
+                                                </h4>
+                                                <div class="price-tag">{{ "%.2f"|format(item.price) }} €</div>
+                                            </div>
                                         </div>
-                                        {% if item.description %}
-                                            <p class="description">{{ item.description }}</p>
-                                        {% endif %}
                                     </div>
                                 {% endif %}
                             {% endfor %}
@@ -69,118 +77,134 @@
                     </div>
                 {% endif %}
             {% endfor %}
-        </section>
+        </div>
     </div>
 </div>
 
 <style>
+/* Basis-Styles */
 .menu-page {
-    width: 100%;
+    background-color: #f8f7f3;
+    min-height: 100vh;
 }
 
+/* Hero Section */
 .menu-hero {
-    position: relative;
-    height: 300px;
-    background-image: url('{{ url_for("static", filename="images/menu-header.jpg") }}');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ url_for("static", filename="images/greek-food.jpg") }}');
     background-size: cover;
     background-position: center;
-    margin-bottom: 40px;
-}
-
-.hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    position: relative;
 }
 
 .hero-content {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    text-align: center;
+    z-index: 2;
 }
 
 .hero-content h1 {
-    font-size: 3em;
-    margin-bottom: 10px;
+    font-size: 3.5em;
+    margin-bottom: 0.5em;
+    font-family: 'Playfair Display', serif;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hero-content p {
-    font-size: 1.2em;
+    font-size: 1.5em;
+    font-style: italic;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* Container und Sections */
 .menu-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 40px 20px;
 }
 
 .menu-section {
-    margin-bottom: 40px;
+    margin-bottom: 60px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.menu-section h2 {
-    color: #c17817;
-    font-size: 2em;
-    margin-bottom: 30px;
+.section-header {
     text-align: center;
+    margin-bottom: 40px;
     position: relative;
 }
 
-.menu-section h2:after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 3px;
-    background: #c17817;
-    margin: 10px auto;
+.section-header h2 {
+    color: #2c3e50;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    font-family: 'Playfair Display', serif;
 }
 
+.greek-pattern {
+    height: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 L10 0 L20 5 L30 0 L40 5 L50 0 L60 5 L70 0 L80 5 L90 0 L100 5" fill="none" stroke="%23c17817" stroke-width="1"/></svg>');
+    background-repeat: repeat-x;
+    background-size: 40px;
+    opacity: 0.6;
+}
+
+/* Kategorien */
 .category-section {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .category-section h3 {
-    color: #333;
-    font-size: 1.5em;
-    margin-bottom: 20px;
+    color: #c17817;
+    font-size: 1.8em;
+    margin-bottom: 25px;
     padding-bottom: 10px;
     border-bottom: 2px solid #c17817;
+    font-family: 'Playfair Display', serif;
 }
 
+/* Menu Items */
 .menu-items {
     display: grid;
-    gap: 20px;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
 }
 
 .menu-item {
     background: #fff;
-    padding: 15px;
-    border-radius: 8px;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.menu-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.item-content {
+    padding: 20px;
 }
 
 .item-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
 .item-header h4 {
-    color: #333;
-    font-size: 1.2em;
+    color: #2c3e50;
+    font-size: 1.3em;
     margin: 0;
+    font-weight: 600;
 }
 
 .unit {
@@ -189,29 +213,58 @@
     margin-left: 5px;
 }
 
-.price {
-    color: #c17817;
+.price-tag {
+    background: #c17817;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
     font-weight: 600;
 }
 
 .description {
     color: #666;
-    font-size: 0.9em;
+    font-size: 0.95em;
+    line-height: 1.5;
     margin: 0;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
     .menu-hero {
-        height: 200px;
+        height: 300px;
     }
 
     .hero-content h1 {
-        font-size: 2em;
+        font-size: 2.5em;
+    }
+
+    .hero-content p {
+        font-size: 1.2em;
+    }
+
+    .menu-section {
+        padding: 20px;
     }
 
     .menu-items {
         grid-template-columns: 1fr;
     }
+
+    .section-header h2 {
+        font-size: 2em;
+    }
+}
+
+/* Spezielle Styles für Getränke */
+.drinks-section .menu-item {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+}
+
+.drinks-section .price-tag {
+    background: #2c3e50;
 }
 </style>
+
+<!-- Google Fonts für schönere Typografie -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 {% endblock %}
