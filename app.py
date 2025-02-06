@@ -99,6 +99,7 @@ def init_db():
         db.session.add(admin)
         db.session.commit()
 
+# Datenbank beim Start initialisieren
 with app.app_context():
     init_db()
 
