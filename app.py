@@ -35,69 +35,78 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'admin_login'
 
-# Datenbank beim Start initialisieren
-with app.app_context():
+# Funktion zum Initialisieren der Datenbank
+def init_db():
     db.create_all()
     
-    # Standard-Kategorien erstellen
-    categories = [
-        # Speisen
-        ('starters', 'Vorspeisen', False),
-        ('soups', 'Suppen', False),
-        ('salads', 'Salate', False),
-        ('lunch', 'Mittagsangebot', False),
-        ('fish', 'Fischgerichte', False),
-        ('vegetarian', 'Vegetarische Gerichte', False),
-        ('steaks', 'Steak vom Grill', False),
-        ('pan_dishes', 'Pfannengerichte & Ofengerichte', False),
-        ('lamb', 'Spezialitäten vom Lamm', False),
-        ('meat', 'Fleischgerichte', False),
-        ('mixed_plates', 'Gemischte Fleischplatten vom Grill', False),
-        ('desserts', 'Desserts', False),
+    # Prüfe, ob bereits Kategorien existieren
+    if MenuCategory.query.count() == 0:
+        # Standard-Kategorien erstellen
+        categories = [
+            # Speisen
+            ('starters', 'Vorspeisen', False),
+            ('soups', 'Suppen', False),
+            ('salads', 'Salate', False),
+            ('lunch', 'Mittagsangebot', False),
+            ('fish', 'Fischgerichte', False),
+            ('vegetarian', 'Vegetarische Gerichte', False),
+            ('steaks', 'Steak vom Grill', False),
+            ('desserts', 'Desserts', False),
+            # Getränke
+            ('softdrinks', 'Alkoholfreie Getränke', True),
+            ('beer', 'Biere', True),
+            ('wine', 'Weine', True),
+            ('spirits', 'Spirituosen', True)
+        ]
         
-        # Getränke
-        ('aperitifs', 'Aperitifs', True),
-        ('water_soft', 'Wasser & Softdrinks', True),
-        ('juices', 'Säfte & Schorlen', True),
-        ('beer', 'Bier', True),
-        ('digestifs', 'Digestifs', True),
-        ('longdrinks', 'Longdrinks', True),
-        ('metaxa', 'Metaxa Brandy', True),
-        ('wine_open', 'Offene Weine', True),
-        ('wine_bottle', 'Weinliste', True),
-        ('ouzo', 'Ouzo', True),
-    ]
-    
-    for name, display_name, is_drink in categories:
-        if not db.session.query(MenuCategory).filter_by(name=name).first():
+        for order, (name, display_name, is_drink) in enumerate(categories):
             category = MenuCategory(
                 name=name,
                 display_name=display_name,
-                is_drink_category=is_drink
+                is_drink_category=is_drink,
+                order=order,
+                active=True
             )
             db.session.add(category)
-    
-    # Admin-Account erstellen
-    if not db.session.query(Admin).filter_by(username='admin').first():
+        
+        db.session.commit()
+
+    # Prüfe, ob bereits Öffnungszeiten existieren
+    if OpeningHours.query.count() == 0:
+        # Standard-Öffnungszeiten erstellen
+        opening_hours = [
+            ('Montag', '11:30', '14:30', True),
+            ('Dienstag', '11:30', '14:30', False),
+            ('Mittwoch', '11:30', '14:30', False),
+            ('Donnerstag', '11:30', '14:30', False),
+            ('Freitag', '11:30', '14:30', False),
+            ('Samstag', '17:00', '23:00', False),
+            ('Sonntag', '11:30', '14:30', False)
+        ]
+        
+        for day, open_time, close_time, closed in opening_hours:
+            hours = OpeningHours(
+                day=day,
+                open_time=open_time,
+                close_time=close_time,
+                closed=closed
+            )
+            db.session.add(hours)
+        
+        db.session.commit()
+
+    # Prüfe, ob bereits ein Admin existiert
+    if Admin.query.count() == 0:
+        # Standard-Admin erstellen
         admin = Admin(
             username='admin',
             password_hash=generate_password_hash('admin123')
         )
         db.session.add(admin)
-        
-    # Beispiel-Öffnungszeiten
-    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    for day in days:
-        if not db.session.query(OpeningHours).filter_by(day=day).first():
-            hours = OpeningHours(
-                day=day,
-                open_time='11:30',
-                close_time='22:00',
-                closed=(day == 'monday')
-            )
-            db.session.add(hours)
-    
-    db.session.commit()
+        db.session.commit()
+
+with app.app_context():
+    init_db()
 
 @login_manager.user_loader
 def load_user(user_id):
