@@ -93,33 +93,19 @@
     <section class="opening-hours-section" id="opening-hours">
         <div class="container">
             <h2>Öffnungszeiten</h2>
-            <div class="hours-grid">
-                {% set days = {
-                    'monday': 'Montag',
-                    'tuesday': 'Dienstag',
-                    'wednesday': 'Mittwoch',
-                    'thursday': 'Donnerstag',
-                    'friday': 'Freitag',
-                    'saturday': 'Samstag',
-                    'sunday': 'Sonntag'
-                } %}
-                {% for day_en, day_de in days.items() %}
-                    {% set hour = opening_hours|selectattr('day', 'equalto', day_en)|first %}
-                    <div class="opening-hours-item">
-                        <span class="day">{{ hour.day }}</span>
-                        <span class="hours">
-                            {% if opening_hours %}
-                                {% if hour and hour.closed %}
-                                    Ruhetag
-                                {% else %}
-                                    {{ hour.open_time }} - {{ hour.close_time }} Uhr
-                                {% endif %}
-                            {% else %}
-                                11:30 - 22:00 Uhr
-                            {% endif %}
-                        </span>
-                    </div>
-                {% endfor %}
+            <div class="opening-hours-grid">
+                <div class="opening-hours-item">
+                    <span class="day">Montag - Donnerstag</span>
+                    <span class="hours">11:30 - 22:00 Uhr</span>
+                </div>
+                <div class="opening-hours-item">
+                    <span class="day">Freitag - Samstag</span>
+                    <span class="hours">11:30 - 23:00 Uhr</span>
+                </div>
+                <div class="opening-hours-item">
+                    <span class="day">Sonntag</span>
+                    <span class="hours">11:30 - 22:00 Uhr</span>
+                </div>
             </div>
         </div>
     </section>
