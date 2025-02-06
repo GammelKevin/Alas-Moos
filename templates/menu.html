@@ -1,27 +1,34 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="menu-page">
-    <div class="container">
-        <h1 class="section-title">Unsere Speisekarte</h1>
+<div class="menu-page">
+    <!-- Hero Section -->
+    <div class="menu-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Unsere Speisekarte</h1>
+            <p>Traditionelle griechische Küche in Moos</p>
+        </div>
+    </div>
 
+    <div class="menu-container">
         <!-- Speisen -->
-        <div class="menu-section">
+        <section class="menu-section">
             <h2>Speisen</h2>
             {% for category in categories %}
                 {% if not category.is_drink_category %}
-                    <div class="menu-category">
+                    <div class="category-section">
                         <h3>{{ category.display_name }}</h3>
                         <div class="menu-items">
                             {% for item in menu_items %}
                                 {% if item.category_id == category.id %}
                                     <div class="menu-item">
-                                        <div class="menu-item-header">
-                                            <h4 class="menu-item-name">{{ item.name }}</h4>
-                                            <span class="menu-item-price">{{ "%.2f"|format(item.price) }} €</span>
+                                        <div class="item-header">
+                                            <h4>{{ item.name }}</h4>
+                                            <span class="price">{{ "%.2f"|format(item.price) }} €</span>
                                         </div>
                                         {% if item.description %}
-                                            <p class="menu-item-description">{{ item.description }}</p>
+                                            <p class="description">{{ item.description }}</p>
                                         {% endif %}
                                     </div>
                                 {% endif %}
@@ -30,28 +37,30 @@
                     </div>
                 {% endif %}
             {% endfor %}
-        </div>
+        </section>
 
         <!-- Getränke -->
-        <div class="menu-section">
+        <section class="menu-section">
             <h2>Getränke</h2>
             {% for category in categories %}
                 {% if category.is_drink_category %}
-                    <div class="menu-category">
+                    <div class="category-section">
                         <h3>{{ category.display_name }}</h3>
                         <div class="menu-items">
                             {% for item in drink_items %}
                                 {% if item.category_id == category.id %}
                                     <div class="menu-item">
-                                        <div class="menu-item-header">
-                                            <h4 class="menu-item-name">{{ item.name }}</h4>
-                                            <span class="menu-item-price">{{ "%.2f"|format(item.price) }} €</span>
+                                        <div class="item-header">
+                                            <h4>
+                                                {{ item.name }}
+                                                {% if item.unit %}
+                                                    <span class="unit">({{ item.unit }})</span>
+                                                {% endif %}
+                                            </h4>
+                                            <span class="price">{{ "%.2f"|format(item.price) }} €</span>
                                         </div>
                                         {% if item.description %}
-                                            <p class="menu-item-description">{{ item.description }}</p>
-                                        {% endif %}
-                                        {% if item.unit %}
-                                            <span class="menu-item-unit">{{ item.unit }}</span>
+                                            <p class="description">{{ item.description }}</p>
                                         {% endif %}
                                     </div>
                                 {% endif %}
@@ -60,21 +69,59 @@
                     </div>
                 {% endif %}
             {% endfor %}
-        </div>
+        </section>
     </div>
-</section>
+</div>
 
 <style>
 .menu-page {
-    padding: 40px 0;
-    background-color: #fff;
+    width: 100%;
 }
 
-.section-title {
-    text-align: center;
+.menu-hero {
+    position: relative;
+    height: 300px;
+    background-image: url('{{ url_for("static", filename="images/menu-header.jpg") }}');
+    background-size: cover;
+    background-position: center;
     margin-bottom: 40px;
-    color: #333;
-    font-size: 2.5em;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.hero-content {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.hero-content h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content p {
+    font-size: 1.2em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.menu-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .menu-section {
@@ -83,85 +130,87 @@
 
 .menu-section h2 {
     color: #c17817;
+    font-size: 2em;
     margin-bottom: 30px;
     text-align: center;
-    font-size: 2em;
+    position: relative;
 }
 
-.menu-category {
+.menu-section h2:after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #c17817;
+    margin: 10px auto;
+}
+
+.category-section {
     margin-bottom: 30px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.menu-category h3 {
+.category-section h3 {
     color: #333;
+    font-size: 1.5em;
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 2px solid #c17817;
-    font-size: 1.5em;
 }
 
 .menu-items {
     display: grid;
     gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 .menu-item {
+    background: #fff;
     padding: 15px;
-    border-radius: 6px;
-    background: #f9f9f9;
-    transition: all 0.3s ease;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.menu-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.menu-item-header {
+.item-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
     margin-bottom: 8px;
 }
 
-.menu-item-name {
+.item-header h4 {
     color: #333;
     font-size: 1.2em;
     margin: 0;
 }
 
-.menu-item-price {
-    color: #c17817;
-    font-weight: bold;
-    font-size: 1.1em;
+.unit {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 5px;
 }
 
-.menu-item-description {
+.price {
+    color: #c17817;
+    font-weight: 600;
+}
+
+.description {
     color: #666;
     font-size: 0.9em;
-    margin: 8px 0;
+    margin: 0;
 }
 
-.menu-item-unit {
-    color: #888;
-    font-size: 0.8em;
-    display: block;
-    margin-top: 5px;
-}
-
-@media (min-width: 768px) {
-    .menu-items {
-        grid-template-columns: repeat(2, 1fr);
+@media (max-width: 768px) {
+    .menu-hero {
+        height: 200px;
     }
-}
 
-@media (min-width: 1200px) {
+    .hero-content h1 {
+        font-size: 2em;
+    }
+
     .menu-items {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: 1fr;
     }
 }
 </style>

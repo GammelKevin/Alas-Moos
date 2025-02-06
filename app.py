@@ -104,13 +104,13 @@ def home():
 
 @app.route('/menu')
 def menu():
-    food_items = MenuItem.query.filter_by(active=True, is_drink=False).order_by(MenuItem.order).all()
-    drink_items = MenuItem.query.filter_by(active=True, is_drink=True).order_by(MenuItem.order).all()
-    categories = MenuCategory.query.filter_by(active=True).order_by(MenuCategory.order).all()
-    return render_template('menu.html',
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    food_items = MenuItem.query.filter_by(is_drink=False, active=True).order_by(MenuItem.order).all()
+    drink_items = MenuItem.query.filter_by(is_drink=True, active=True).order_by(MenuItem.order).all()
+    return render_template('menu.html', 
+                         categories=categories,
                          food_items=food_items,
-                         drink_items=drink_items,
-                         categories=categories)
+                         drink_items=drink_items)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
