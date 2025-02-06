@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Restaurant ALAS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body class="admin-body">
+    <nav class="admin-nav">
+        <div class="container">
+            <div class="nav-content">
+                <h1>ALAS Admin</h1>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-outline">Abmelden</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-section">
+            <h2>Speisekarte verwalten</h2>
+            <button class="btn btn-primary" onclick="toggleModal('addItemModal')">
+                <i class="fas fa-plus"></i> Gericht hinzufügen
+            </button>
+            
+            <div class="menu-items">
+                {% for item in menu_items %}
+                <div class="menu-item-card {% if not item.active %}inactive{% endif %}">
+                    <div class="item-header">
+                        <h3>{{ item.name }}</h3>
+                        <div class="item-actions">
+                            <button class="btn btn-small" onclick="toggleModal('editItemModal{{ item.id }}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <a href="{{ url_for('delete_menu_item', id=item.id) }}" class="btn btn-small btn-danger" onclick="return confirm('Wirklich löschen?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <p class="item-category">{{ item.category }}</p>
+                    <p class="item-description">{{ item.description }}</p>
+                    <p class="item-price">{{ "%.2f"|format(item.price) }} €</p>
+                </div>
+
+                <!-- Edit Modal -->
+                <div id="editItemModal{{ item.id }}" class="modal">
+                    <div class="modal-content">
+                        <h3>Gericht bearbeiten</h3>
+                        <form action="{{ url_for('edit_menu_item', id=item.id) }}" method="POST">
+                            <div class="form-group">
+                                <label>Kategorie</label>
+                                <select name="category" required>
+                                    <option value="Vorspeisen" {% if item.category == 'Vorspeisen' %}selected{% endif %}>Vorspeisen</option>
+                                    <option value="Hauptgerichte" {% if item.category == 'Hauptgerichte' %}selected{% endif %}>Hauptgerichte</option>
+                                    <option value="Desserts" {% if item.category == 'Desserts' %}selected{% endif %}>Desserts</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" name="name" value="{{ item.name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Beschreibung</label>
+                                <textarea name="description">{{ item.description }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Preis (€)</label>
+                                <input type="number" name="price" value="{{ item.price }}" step="0.10" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="active" {% if item.active %}checked{% endif %}>
+                                    Aktiv
+                                </label>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-outline" onclick="toggleModal('editItemModal{{ item.id }}')">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h2>Öffnungszeiten verwalten</h2>
+            <form action="{{ url_for('update_hours') }}" method="POST" class="opening-hours-form">
+                {% set days = {
+                    'monday': 'Montag',
+                    'tuesday': 'Dienstag',
+                    'wednesday': 'Mittwoch',
+                    'thursday': 'Donnerstag',
+                    'friday': 'Freitag',
+                    'saturday': 'Samstag',
+                    'sunday': 'Sonntag'
+                } %}
+
+                {% for day_en, day_de in days.items() %}
+                    {% set hours = opening_hours|selectattr('day', 'equalto', day_en)|first %}
+                    <div class="day-row">
+                        <div class="day-name">{{ day_de }}</div>
+                        <div class="hours-inputs">
+                            <input type="time" name="{{ day_en }}_open" value="{{ hours.open_time if hours else '00:00' }}"
+                                   {% if hours and hours.closed %}disabled{% endif %}>
+                            <span>bis</span>
+                            <input type="time" name="{{ day_en }}_close" value="{{ hours.close_time if hours else '00:00' }}"
+                                   {% if hours and hours.closed %}disabled{% endif %}>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="{{ day_en }}_closed" 
+                                       {% if hours and hours.closed %}checked{% endif %}
+                                       onchange="toggleTimeInputs(this, '{{ day_en }}')">
+                                Ruhetag
+                            </label>
+                        </div>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Öffnungszeiten speichern</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <h3>Neues Gericht hinzufügen</h3>
+            <form action="{{ url_for('add_menu_item') }}" method="POST">
+                <div class="form-group">
+                    <label>Kategorie</label>
+                    <select name="category" required>
+                        <option value="Vorspeisen">Vorspeisen</option>
+                        <option value="Hauptgerichte">Hauptgerichte</option>
+                        <option value="Desserts">Desserts</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Beschreibung</label>
+                    <textarea name="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Preis (€)</label>
+                    <input type="number" name="price" step="0.10" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="toggleModal('addItemModal')">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function toggleTimeInputs(checkbox, day) {
+            const openInput = document.querySelector(`input[name="${day}_open"]`);
+            const closeInput = document.querySelector(`input[name="${day}_close"]`);
+            openInput.disabled = checkbox.checked;
+            closeInput.disabled = checkbox.checked;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

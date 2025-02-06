@@ -22,6 +22,7 @@
             <a href="/menu">Speisekarte</a>
             <a href="#about">Über Uns</a>
             <a href="#kontakt">Reservieren</a>
+            <a href="#opening-hours">Öffnungszeiten</a>
         </div>
         <div class="menu-btn">
             <div class="menu-btn__burger"></div>
@@ -84,6 +85,36 @@
                         <p>Frittierte Tintenfischringe mit Knoblauchsauce</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Öffnungszeiten Section -->
+    <section class="opening-hours-section" id="opening-hours">
+        <div class="container">
+            <h2>Öffnungszeiten</h2>
+            <div class="hours-grid">
+                {% for hours in opening_hours %}
+                    <div class="day-hours {% if hours.closed %}closed{% endif %}">
+                        <span class="day">
+                            {% if hours.day == 'monday' %}Montag
+                            {% elif hours.day == 'tuesday' %}Dienstag
+                            {% elif hours.day == 'wednesday' %}Mittwoch
+                            {% elif hours.day == 'thursday' %}Donnerstag
+                            {% elif hours.day == 'friday' %}Freitag
+                            {% elif hours.day == 'saturday' %}Samstag
+                            {% elif hours.day == 'sunday' %}Sonntag
+                            {% endif %}
+                        </span>
+                        <span class="hours">
+                            {% if hours.closed %}
+                                Ruhetag
+                            {% else %}
+                                {{ hours.open_time }} - {{ hours.close_time }} Uhr
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </section>
