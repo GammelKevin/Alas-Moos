@@ -35,21 +35,32 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'admin_login'
 
+# Datenbank beim Start initialisieren
+with app.app_context():
+    db.create_all()
+    # Admin-Account erstellen, wenn nicht vorhanden
+    if not db.session.query(Admin).filter_by(username='admin').first():
+        admin = Admin(
+            username='admin',
+            password_hash=generate_password_hash('admin123')
+        )
+        db.session.add(admin)
+        # Beispiel-Öffnungszeiten hinzufügen
+        days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        for day in days:
+            if not db.session.query(OpeningHours).filter_by(day=day).first():
+                hours = OpeningHours(
+                    day=day,
+                    open_time='11:30',
+                    close_time='22:00',
+                    closed=(day == 'monday')
+                )
+                db.session.add(hours)
+        db.session.commit()
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(Admin, int(user_id))
-
-def init_db():
-    with app.app_context():
-        db.create_all()
-        # Create default admin if not exists
-        if not db.session.query(Admin).filter_by(username='admin').first():
-            admin = Admin(
-                username='admin',
-                password_hash=generate_password_hash('admin123')
-            )
-            db.session.add(admin)
-            db.session.commit()
 
 @app.route('/')
 def home():
@@ -174,5 +185,4 @@ def reservierung():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
