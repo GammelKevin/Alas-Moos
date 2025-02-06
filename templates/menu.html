@@ -8,96 +8,119 @@
         <div class="hero-content">
             <h1>Unsere Speisekarte</h1>
             <p>Traditionelle griechische Küche</p>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" id="menuSearch" placeholder="Suche nach Gerichten..." onkeyup="searchMenu()">
+                <i class="fas fa-search search-icon"></i>
+            </div>
         </div>
-        <img src="{{ url_for('static', filename='images/greek-food.jpg') }}" alt="Greek Food" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; object-fit: cover; z-index: 0;">
     </div>
 
+    <!-- Menu Content -->
     <div class="menu-content">
-        <!-- Speisen -->
-        <div class="menu-section food-section">
-            <div class="section-header">
-                <h2>Speisen</h2>
-                <div class="greek-pattern"></div>
-            </div>
-
-            {% for category in categories %}
-                {% if not category.is_drink_category %}
-                    <div class="category-block">
-                        <h3>{{ category.display_name }}</h3>
-                        <div class="menu-grid">
-                            {% for item in food_items %}
-                                {% if item.category_id == category.id and item.active %}
-                                    <div class="menu-item">
-                                        <div class="item-header">
-                                            <h4 class="item-name">{{ item.name }}</h4>
-                                            <div class="item-price">{{ "%.2f"|format(item.price) }} €</div>
-                                        </div>
-                                        {% if item.description %}
-                                            <p class="item-description">{{ item.description }}</p>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+        <!-- Quick Navigation -->
+        <div class="quick-nav">
+            <button class="nav-btn active" onclick="filterItems('all')">Alle</button>
+            <button class="nav-btn" onclick="filterItems('food')">Speisen</button>
+            <button class="nav-btn" onclick="filterItems('drinks')">Getränke</button>
         </div>
 
-        <!-- Getränke -->
-        <div class="menu-section drinks-section">
-            <div class="section-header">
-                <h2>Getränke</h2>
-                <div class="greek-pattern"></div>
+        <!-- Menu Items Container -->
+        <div class="menu-container">
+            <!-- Speisen -->
+            <div class="menu-section food-items" id="foodSection">
+                {% for category in categories %}
+                    {% if not category.is_drink_category %}
+                        <div class="category-block">
+                            <div class="category-header">
+                                <h2>{{ category.display_name }}</h2>
+                                <div class="greek-pattern"></div>
+                            </div>
+                            <div class="menu-grid">
+                                {% for item in food_items %}
+                                    {% if item.category_id == category.id and item.active %}
+                                        <div class="menu-item" data-type="food" data-name="{{ item.name.lower() }}" data-category="{{ category.display_name.lower() }}">
+                                            <div class="item-content">
+                                                <div class="item-header">
+                                                    <h3 class="item-name">{{ item.name }}</h3>
+                                                    <span class="item-price">{{ "%.2f"|format(item.price) }} €</span>
+                                                </div>
+                                                {% if item.description %}
+                                                    <p class="item-description">{{ item.description }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
 
-            {% for category in categories %}
-                {% if category.is_drink_category %}
-                    <div class="category-block">
-                        <h3>{{ category.display_name }}</h3>
-                        <div class="menu-grid">
-                            {% for item in drink_items %}
-                                {% if item.category_id == category.id and item.active %}
-                                    <div class="menu-item">
-                                        <div class="item-header">
-                                            <h4 class="item-name">
-                                                {{ item.name }}
-                                                {% if item.unit %}
-                                                    <span class="unit">({{ item.unit }})</span>
-                                                {% endif %}
-                                            </h4>
-                                            <div class="item-price">{{ "%.2f"|format(item.price) }} €</div>
+            <!-- Getränke -->
+            <div class="menu-section drink-items" id="drinkSection">
+                {% for category in categories %}
+                    {% if category.is_drink_category %}
+                        <div class="category-block">
+                            <div class="category-header">
+                                <h2>{{ category.display_name }}</h2>
+                                <div class="greek-pattern"></div>
+                            </div>
+                            <div class="menu-grid">
+                                {% for item in drink_items %}
+                                    {% if item.category_id == category.id and item.active %}
+                                        <div class="menu-item" data-type="drinks" data-name="{{ item.name.lower() }}" data-category="{{ category.display_name.lower() }}">
+                                            <div class="item-content">
+                                                <div class="item-header">
+                                                    <h3 class="item-name">
+                                                        {{ item.name }}
+                                                        {% if item.unit %}
+                                                            <span class="unit">({{ item.unit }})</span>
+                                                        {% endif %}
+                                                    </h3>
+                                                    <span class="item-price">{{ "%.2f"|format(item.price) }} €</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Font Awesome für Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 <style>
-/* Basis-Styles */
+/* Base Styles */
 body {
-    background: #1a1a1a;
+    background-color: #0a0a0a;
     color: #fff;
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
 }
 
 /* Hero Section */
 .menu-hero {
-    height: 400px;
+    height: 60vh;
+    min-height: 400px;
+    background-image: url('{{ url_for("static", filename="images/greek-food.jpg") }}');
     background-size: cover;
     background-position: center;
+    background-attachment: fixed;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
     text-align: center;
-    margin-bottom: 60px;
+    margin-bottom: 0;
 }
 
 .hero-overlay {
@@ -106,49 +129,129 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
 }
 
 .hero-content {
     position: relative;
     z-index: 1;
-    padding: 20px;
+    width: 90%;
+    max-width: 800px;
 }
 
 .hero-content h1 {
-    font-size: 3.5em;
+    font-size: 4em;
     margin-bottom: 20px;
     font-family: 'Playfair Display', serif;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .hero-content p {
     font-size: 1.5em;
+    color: #e19b4c;
+    margin-bottom: 30px;
     font-style: italic;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Search Bar */
+.search-container {
+    position: relative;
+    max-width: 500px;
+    margin: 30px auto 0;
+}
+
+#menuSearch {
+    width: 100%;
+    padding: 15px 20px;
+    padding-right: 50px;
+    border: none;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+}
+
+#menuSearch:focus {
+    outline: none;
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 0 20px rgba(225,155,76,0.3);
+}
+
+#menuSearch::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+.search-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #e19b4c;
+    font-size: 1.2em;
+}
+
+/* Quick Navigation */
+.quick-nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 30px 0;
+    background: #0f0f0f;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-btn {
+    padding: 10px 25px;
+    border: 2px solid #e19b4c;
+    border-radius: 25px;
+    background: transparent;
+    color: #e19b4c;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover, .nav-btn.active {
+    background: #e19b4c;
+    color: #0a0a0a;
 }
 
 /* Menu Content */
 .menu-content {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 40px 20px;
 }
 
-.menu-section {
-    margin-bottom: 60px;
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
 }
 
-.section-header {
-    text-align: center;
+.category-block {
     margin-bottom: 40px;
+    background: #151515;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-.section-header h2 {
+.category-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.category-header h2 {
     font-family: 'Playfair Display', serif;
     font-size: 2.5em;
     color: #e19b4c;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .greek-pattern {
@@ -156,26 +259,9 @@ body {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 L10 0 L20 5 L30 0 L40 5 L50 0 L60 5 L70 0 L80 5 L90 0 L100 5" fill="none" stroke="%23e19b4c" stroke-width="1"/></svg>');
     background-repeat: repeat-x;
     background-size: 40px;
-    opacity: 0.8;
+    opacity: 0.6;
     margin: 0 auto;
-    max-width: 300px;
-}
-
-.category-block {
-    margin-bottom: 40px;
-    background: #2a2a2a;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.category-block h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8em;
-    color: #fff;
-    margin-bottom: 25px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e19b4c;
+    max-width: 200px;
 }
 
 .menu-grid {
@@ -185,22 +271,25 @@ body {
 }
 
 .menu-item {
-    padding: 20px;
-    background: #333;
-    border-radius: 10px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #1a1a1a;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .menu-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-    background: #3a3a3a;
+    box-shadow: 0 5px 20px rgba(225,155,76,0.2);
+}
+
+.item-content {
+    padding: 20px;
 }
 
 .item-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     margin-bottom: 10px;
 }
 
@@ -208,56 +297,46 @@ body {
     font-size: 1.2em;
     color: #fff;
     margin: 0;
-    font-weight: 600;
 }
 
 .unit {
     font-size: 0.8em;
-    color: #aaa;
+    color: #888;
     margin-left: 5px;
-    font-weight: normal;
 }
 
 .item-price {
-    color: #fff;
     background: #e19b4c;
-    padding: 5px 10px;
+    color: #0a0a0a;
+    padding: 5px 15px;
     border-radius: 20px;
     font-weight: 600;
 }
 
 .item-description {
-    color: #bbb;
+    color: #999;
     font-size: 0.9em;
-    line-height: 1.5;
     margin: 0;
 }
 
-/* Drink Section Specific Styles */
-.drinks-section .menu-item {
-    background: #2d2d2d;
-}
-
-.drinks-section .menu-item:hover {
-    background: #353535;
-}
-
-.drinks-section .item-price {
+/* Drink Section Specific */
+.drink-items .item-price {
     background: #4a90e2;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .menu-hero {
-        height: 300px;
-    }
-
     .hero-content h1 {
         font-size: 2.5em;
     }
 
     .hero-content p {
         font-size: 1.2em;
+    }
+
+    .quick-nav {
+        flex-wrap: wrap;
+        padding: 15px;
     }
 
     .category-block {
@@ -267,13 +346,81 @@ body {
     .menu-grid {
         grid-template-columns: 1fr;
     }
+}
 
-    .section-header h2 {
-        font-size: 2em;
-    }
+/* Animation for Search Results */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-item {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.hidden {
+    display: none;
 }
 </style>
 
-<!-- Google Fonts für schönere Typografie -->
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+function searchMenu() {
+    const searchInput = document.getElementById('menuSearch');
+    const searchTerm = searchInput.value.toLowerCase();
+    const menuItems = document.querySelectorAll('.menu-item');
+
+    menuItems.forEach(item => {
+        const name = item.getAttribute('data-name');
+        const category = item.getAttribute('data-category');
+        
+        if (name.includes(searchTerm) || category.includes(searchTerm)) {
+            item.style.display = '';
+            item.style.animation = 'none';
+            item.offsetHeight; // Trigger reflow
+            item.style.animation = null;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // Show/hide category blocks based on visible items
+    document.querySelectorAll('.category-block').forEach(block => {
+        const hasVisibleItems = [...block.querySelectorAll('.menu-item')]
+            .some(item => item.style.display !== 'none');
+        block.style.display = hasVisibleItems ? '' : 'none';
+    });
+}
+
+function filterItems(type) {
+    const buttons = document.querySelectorAll('.nav-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const foodSection = document.getElementById('foodSection');
+    const drinkSection = document.getElementById('drinkSection');
+
+    switch(type) {
+        case 'all':
+            foodSection.style.display = '';
+            drinkSection.style.display = '';
+            break;
+        case 'food':
+            foodSection.style.display = '';
+            drinkSection.style.display = 'none';
+            break;
+        case 'drinks':
+            foodSection.style.display = 'none';
+            drinkSection.style.display = '';
+            break;
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    filterItems('all');
+});
+</script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 {% endblock %}
