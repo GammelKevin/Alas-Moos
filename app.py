@@ -46,12 +46,32 @@ def init_db():
     if MenuCategory.query.count() == 0:
         # Standard-Kategorien erstellen
         categories = [
-            MenuCategory(name='Vorspeisen'),
-            MenuCategory(name='Hauptgerichte'),
-            MenuCategory(name='Desserts'),
-            MenuCategory(name='Getränke')
+            # Speisen
+            ('starters', 'Vorspeisen', False),
+            ('soups', 'Suppen', False),
+            ('salads', 'Salate', False),
+            ('lunch', 'Mittagsangebot', False),
+            ('fish', 'Fischgerichte', False),
+            ('vegetarian', 'Vegetarische Gerichte', False),
+            ('steaks', 'Steak vom Grill', False),
+            ('desserts', 'Desserts', False),
+            # Getränke
+            ('softdrinks', 'Alkoholfreie Getränke', True),
+            ('beer', 'Biere', True),
+            ('wine', 'Weine', True),
+            ('spirits', 'Spirituosen', True)
         ]
-        db.session.add_all(categories)
+        
+        for order, (name, display_name, is_drink) in enumerate(categories):
+            category = MenuCategory(
+                name=name,
+                display_name=display_name,
+                is_drink_category=is_drink,
+                order=order,
+                active=True
+            )
+            db.session.add(category)
+        
         db.session.commit()
 
     # Prüfe, ob bereits Öffnungszeiten existieren
