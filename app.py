@@ -37,7 +37,10 @@ login_manager.login_view = 'admin_login'
 
 # Funktion zum Initialisieren der Datenbank
 def init_db():
-    db.create_all()
+    # Alle Tabellen löschen und neu erstellen
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
     
     # Prüfe, ob bereits Kategorien existieren
     if MenuCategory.query.count() == 0:
