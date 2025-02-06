@@ -78,15 +78,25 @@ def init_db():
     if OpeningHours.query.count() == 0:
         # Standard-Öffnungszeiten erstellen
         opening_hours = [
-            OpeningHours(day='Montag', open_time='11:30', close_time='22:00'),
-            OpeningHours(day='Dienstag', open_time='11:30', close_time='22:00'),
-            OpeningHours(day='Mittwoch', open_time='11:30', close_time='22:00'),
-            OpeningHours(day='Donnerstag', open_time='11:30', close_time='22:00'),
-            OpeningHours(day='Freitag', open_time='11:30', close_time='23:00'),
-            OpeningHours(day='Samstag', open_time='11:30', close_time='23:00'),
-            OpeningHours(day='Sonntag', open_time='11:30', close_time='22:00')
+            ('Monday', 'Montag', '11:30', '22:00', False),
+            ('Tuesday', 'Dienstag', '11:30', '22:00', False),
+            ('Wednesday', 'Mittwoch', '11:30', '22:00', False),
+            ('Thursday', 'Donnerstag', '11:30', '22:00', False),
+            ('Friday', 'Freitag', '11:30', '23:00', False),
+            ('Saturday', 'Samstag', '11:30', '23:00', False),
+            ('Sunday', 'Sonntag', '11:30', '22:00', False)
         ]
-        db.session.add_all(opening_hours)
+        
+        for day_en, day_de, open_time, close_time, closed in opening_hours:
+            hours = OpeningHours(
+                day=day_en,
+                day_display=day_de,
+                open_time=open_time,
+                close_time=close_time,
+                closed=closed
+            )
+            db.session.add(hours)
+        
         db.session.commit()
 
     # Prüfe, ob bereits ein Admin-Account existiert
@@ -94,7 +104,7 @@ def init_db():
         # Standard Admin-Account erstellen
         admin = Admin(
             username='admin',
-            password_hash=generate_password_hash('admin123')
+            password_hash=generate_password_hash('admin123', method='pbkdf2')
         )
         db.session.add(admin)
         db.session.commit()
@@ -112,12 +122,12 @@ def home():
     menu_items = db.session.query(MenuItem).filter_by(active=True, is_drink=False).all()
     drink_items = db.session.query(MenuItem).filter_by(active=True, is_drink=True).all()
     categories = db.session.query(MenuCategory).filter_by(active=True).order_by(MenuCategory.order).all()
-    opening_hours = OpeningHours.query.all()
+    opening_hours = OpeningHours.query.order_by(OpeningHours.id).all()
 
     # Wenn keine Öffnungszeiten existieren, initialisiere die Datenbank neu
     if not opening_hours:
         init_db()
-        opening_hours = OpeningHours.query.all()
+        opening_hours = OpeningHours.query.order_by(OpeningHours.id).all()
 
     return render_template('index.html', 
                          menu_items=menu_items,

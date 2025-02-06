@@ -94,18 +94,18 @@
         <div class="container">
             <h2>Öffnungszeiten</h2>
             <div class="opening-hours-grid">
-                <div class="opening-hours-item">
-                    <span class="day">Montag - Donnerstag</span>
-                    <span class="hours">11:30 - 22:00 Uhr</span>
-                </div>
-                <div class="opening-hours-item">
-                    <span class="day">Freitag - Samstag</span>
-                    <span class="hours">11:30 - 23:00 Uhr</span>
-                </div>
-                <div class="opening-hours-item">
-                    <span class="day">Sonntag</span>
-                    <span class="hours">11:30 - 22:00 Uhr</span>
-                </div>
+                {% for hour in opening_hours %}
+                    <div class="opening-hours-item">
+                        <span class="day">{{ hour.day_display }}</span>
+                        <span class="hours">
+                            {% if hour.closed %}
+                                Ruhetag
+                            {% else %}
+                                {{ hour.open_time }} - {{ hour.close_time }} Uhr
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </section>

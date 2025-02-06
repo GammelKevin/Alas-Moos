@@ -26,6 +26,7 @@ class MenuCategory(db.Model):
 class OpeningHours(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(20), nullable=False)
+    day_display = db.Column(db.String(20), nullable=False)  # Deutscher Name
     open_time = db.Column(db.String(5), nullable=False)
     close_time = db.Column(db.String(5), nullable=False)
     closed = db.Column(db.Boolean, default=False)
