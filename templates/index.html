@@ -105,13 +105,17 @@
                 } %}
                 {% for day_en, day_de in days.items() %}
                     {% set hour = opening_hours|selectattr('day', 'equalto', day_en)|first %}
-                    <div class="day-hours {% if hour and hour.closed %}closed{% endif %}">
-                        <span class="day">{{ day_de }}</span>
+                    <div class="opening-hours-item">
+                        <span class="day">{{ hour.day }}</span>
                         <span class="hours">
-                            {% if hour and hour.closed %}
-                                Ruhetag
+                            {% if opening_hours %}
+                                {% if hour and hour.closed %}
+                                    Ruhetag
+                                {% else %}
+                                    {{ hour.open_time }} - {{ hour.close_time }} Uhr
+                                {% endif %}
                             {% else %}
-                                {{ hour.open_time }} - {{ hour.close_time }} Uhr
+                                11:30 - 22:00 Uhr
                             {% endif %}
                         </span>
                     </div>
