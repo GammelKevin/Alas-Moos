@@ -4,7 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
-from database import db, MenuItem, OpeningHours, Admin
+from database import db, MenuItem, MenuCategory, OpeningHours, Admin
 
 load_dotenv()
 
@@ -38,25 +38,66 @@ login_manager.login_view = 'admin_login'
 # Datenbank beim Start initialisieren
 with app.app_context():
     db.create_all()
-    # Admin-Account erstellen, wenn nicht vorhanden
+    
+    # Standard-Kategorien erstellen
+    categories = [
+        # Speisen
+        ('starters', 'Vorspeisen', False),
+        ('soups', 'Suppen', False),
+        ('salads', 'Salate', False),
+        ('lunch', 'Mittagsangebot', False),
+        ('fish', 'Fischgerichte', False),
+        ('vegetarian', 'Vegetarische Gerichte', False),
+        ('steaks', 'Steak vom Grill', False),
+        ('pan_dishes', 'Pfannengerichte & Ofengerichte', False),
+        ('lamb', 'Spezialitäten vom Lamm', False),
+        ('meat', 'Fleischgerichte', False),
+        ('mixed_plates', 'Gemischte Fleischplatten vom Grill', False),
+        ('desserts', 'Desserts', False),
+        
+        # Getränke
+        ('aperitifs', 'Aperitifs', True),
+        ('water_soft', 'Wasser & Softdrinks', True),
+        ('juices', 'Säfte & Schorlen', True),
+        ('beer', 'Bier', True),
+        ('digestifs', 'Digestifs', True),
+        ('longdrinks', 'Longdrinks', True),
+        ('metaxa', 'Metaxa Brandy', True),
+        ('wine_open', 'Offene Weine', True),
+        ('wine_bottle', 'Weinliste', True),
+        ('ouzo', 'Ouzo', True),
+    ]
+    
+    for name, display_name, is_drink in categories:
+        if not db.session.query(MenuCategory).filter_by(name=name).first():
+            category = MenuCategory(
+                name=name,
+                display_name=display_name,
+                is_drink_category=is_drink
+            )
+            db.session.add(category)
+    
+    # Admin-Account erstellen
     if not db.session.query(Admin).filter_by(username='admin').first():
         admin = Admin(
             username='admin',
             password_hash=generate_password_hash('admin123')
         )
         db.session.add(admin)
-        # Beispiel-Öffnungszeiten hinzufügen
-        days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        for day in days:
-            if not db.session.query(OpeningHours).filter_by(day=day).first():
-                hours = OpeningHours(
-                    day=day,
-                    open_time='11:30',
-                    close_time='22:00',
-                    closed=(day == 'monday')
-                )
-                db.session.add(hours)
-        db.session.commit()
+        
+    # Beispiel-Öffnungszeiten
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    for day in days:
+        if not db.session.query(OpeningHours).filter_by(day=day).first():
+            hours = OpeningHours(
+                day=day,
+                open_time='11:30',
+                close_time='22:00',
+                closed=(day == 'monday')
+            )
+            db.session.add(hours)
+    
+    db.session.commit()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -64,15 +105,19 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    menu_items = db.session.query(MenuItem).filter_by(active=True).all()
+    menu_items = db.session.query(MenuItem).filter_by(active=True, is_drink=False).all()
+    drink_items = db.session.query(MenuItem).filter_by(active=True, is_drink=True).all()
+    categories = db.session.query(MenuCategory).filter_by(active=True).order_by(MenuCategory.order).all()
     opening_hours = db.session.query(OpeningHours).all()
-    return render_template('index.html', menu_items=menu_items, opening_hours=opening_hours)
+    return render_template('index.html', 
+                         menu_items=menu_items,
+                         drink_items=drink_items,
+                         categories=categories,
+                         opening_hours=opening_hours)
 
 @app.route('/menu')
 def menu():
-    menu_items = db.session.query(MenuItem).filter_by(active=True).all()
-    opening_hours = db.session.query(OpeningHours).all()
-    return render_template('menu.html', menu_items=menu_items, opening_hours=opening_hours)
+    return redirect(url_for('home') + '#menu')
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -97,8 +142,12 @@ def admin_logout():
 @login_required
 def admin_dashboard():
     menu_items = db.session.query(MenuItem).all()
+    categories = db.session.query(MenuCategory).order_by(MenuCategory.order).all()
     opening_hours = db.session.query(OpeningHours).all()
-    return render_template('admin/dashboard.html', menu_items=menu_items, opening_hours=opening_hours)
+    return render_template('admin/dashboard.html', 
+                         menu_items=menu_items,
+                         categories=categories,
+                         opening_hours=opening_hours)
 
 @app.route('/admin/menu/add', methods=['POST'])
 @login_required
@@ -106,9 +155,12 @@ def add_menu_item():
     data = request.form
     item = MenuItem(
         category=data['category'],
+        subcategory=data.get('subcategory'),
         name=data['name'],
-        description=data['description'],
+        description=data.get('description'),
         price=float(data['price']),
+        unit=data.get('unit'),
+        is_drink=data.get('is_drink') == 'true',
         active=True
     )
     db.session.add(item)
@@ -124,10 +176,14 @@ def edit_menu_item(id):
     
     data = request.form
     item.category = data['category']
+    item.subcategory = data.get('subcategory')
     item.name = data['name']
-    item.description = data['description']
+    item.description = data.get('description')
     item.price = float(data['price'])
+    item.unit = data.get('unit')
+    item.is_drink = data.get('is_drink') == 'true'
     item.active = 'active' in data
+    
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 

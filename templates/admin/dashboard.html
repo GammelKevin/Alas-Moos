@@ -3,166 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Restaurant ALAS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <title>Admin Dashboard - Alas Restaurant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="admin-body">
-    <nav class="admin-nav">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <div class="nav-content">
-                <h1>ALAS Admin</h1>
-                <a href="{{ url_for('admin_logout') }}" class="btn btn-outline">Abmelden</a>
+            <a class="navbar-brand" href="#">Alas Admin</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="admin-container">
-        <div class="admin-section">
-            <h2>Speisekarte verwalten</h2>
-            <button class="btn btn-primary" onclick="toggleModal('addItemModal')">
-                <i class="fas fa-plus"></i> Gericht hinzufügen
-            </button>
-            
-            <div class="menu-items">
-                {% for item in menu_items %}
-                <div class="menu-item-card {% if not item.active %}inactive{% endif %}">
-                    <div class="item-header">
-                        <h3>{{ item.name }}</h3>
-                        <div class="item-actions">
-                            <button class="btn btn-small" onclick="toggleModal('editItemModal{{ item.id }}')">
-                                <i class="fas fa-edit"></i>
+    <div class="container mt-4">
+        <h2>Menü verwalten</h2>
+        
+        <!-- Tabs für Speisen und Getränke -->
+        <ul class="nav nav-tabs mb-4" id="menuTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="food-tab" data-bs-toggle="tab" href="#food" role="tab">Speisen</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="drinks-tab" data-bs-toggle="tab" href="#drinks" role="tab">Getränke</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="menuTabContent">
+            <!-- Speisen Tab -->
+            <div class="tab-pane fade show active" id="food" role="tabpanel">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addFoodModal">
+                    Neues Gericht hinzufügen
+                </button>
+
+                <div class="accordion" id="foodAccordion">
+                    {% for category in categories if not category.is_drink_category %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse{{ category.id }}">
+                                {{ category.display_name }}
                             </button>
-                            <a href="{{ url_for('delete_menu_item', id=item.id) }}" class="btn btn-small btn-danger" onclick="return confirm('Wirklich löschen?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                        </h2>
+                        <div id="collapse{{ category.id }}" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Beschreibung</th>
+                                                <th>Preis</th>
+                                                <th>Status</th>
+                                                <th>Aktionen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in menu_items if item.category == category.name and not item.is_drink %}
+                                            <tr>
+                                                <td>{{ item.name }}</td>
+                                                <td>{{ item.description or '' }}</td>
+                                                <td>{{ "%.2f"|format(item.price) }} €</td>
+                                                <td>
+                                                    <span class="badge {% if item.active %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {{ 'Aktiv' if item.active else 'Inaktiv' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary" onclick="editItem({{ item.id }})">
+                                                        Bearbeiten
+                                                    </button>
+                                                    <a href="{{ url_for('delete_menu_item', id=item.id) }}" 
+                                                       class="btn btn-sm btn-danger"
+                                                       onclick="return confirm('Wirklich löschen?')">
+                                                        Löschen
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <p class="item-category">{{ item.category }}</p>
-                    <p class="item-description">{{ item.description }}</p>
-                    <p class="item-price">{{ "%.2f"|format(item.price) }} €</p>
+                    {% endfor %}
                 </div>
+            </div>
 
-                <!-- Edit Modal -->
-                <div id="editItemModal{{ item.id }}" class="modal">
-                    <div class="modal-content">
-                        <h3>Gericht bearbeiten</h3>
-                        <form action="{{ url_for('edit_menu_item', id=item.id) }}" method="POST">
-                            <div class="form-group">
-                                <label>Kategorie</label>
-                                <select name="category" required>
-                                    <option value="Vorspeisen" {% if item.category == 'Vorspeisen' %}selected{% endif %}>Vorspeisen</option>
-                                    <option value="Hauptgerichte" {% if item.category == 'Hauptgerichte' %}selected{% endif %}>Hauptgerichte</option>
-                                    <option value="Desserts" {% if item.category == 'Desserts' %}selected{% endif %}>Desserts</option>
-                                </select>
+            <!-- Getränke Tab -->
+            <div class="tab-pane fade" id="drinks" role="tabpanel">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addDrinkModal">
+                    Neues Getränk hinzufügen
+                </button>
+
+                <div class="accordion" id="drinksAccordion">
+                    {% for category in categories if category.is_drink_category %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapsedrink{{ category.id }}">
+                                {{ category.display_name }}
+                            </button>
+                        </h2>
+                        <div id="collapsedrink{{ category.id }}" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Menge</th>
+                                                <th>Preis</th>
+                                                <th>Status</th>
+                                                <th>Aktionen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in menu_items if item.category == category.name and item.is_drink %}
+                                            <tr>
+                                                <td>{{ item.name }}</td>
+                                                <td>{{ item.unit or '' }}</td>
+                                                <td>{{ "%.2f"|format(item.price) }} €</td>
+                                                <td>
+                                                    <span class="badge {% if item.active %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {{ 'Aktiv' if item.active else 'Inaktiv' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary" onclick="editItem({{ item.id }})">
+                                                        Bearbeiten
+                                                    </button>
+                                                    <a href="{{ url_for('delete_menu_item', id=item.id) }}" 
+                                                       class="btn btn-sm btn-danger"
+                                                       onclick="return confirm('Wirklich löschen?')">
+                                                        Löschen
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>Name</label>
-                                <input type="text" name="name" value="{{ item.name }}" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Beschreibung</label>
-                                <textarea name="description">{{ item.description }}</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Preis (€)</label>
-                                <input type="number" name="price" value="{{ item.price }}" step="0.10" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="active" {% if item.active %}checked{% endif %}>
-                                    Aktiv
-                                </label>
-                            </div>
-                            <div class="modal-actions">
-                                <button type="button" class="btn btn-outline" onclick="toggleModal('editItemModal{{ item.id }}')">Abbrechen</button>
-                                <button type="submit" class="btn btn-primary">Speichern</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </div>
 
-        <div class="admin-section">
-            <h2>Öffnungszeiten verwalten</h2>
-            <form action="{{ url_for('update_hours') }}" method="POST" class="opening-hours-form">
-                {% set days = {
-                    'monday': 'Montag',
-                    'tuesday': 'Dienstag',
-                    'wednesday': 'Mittwoch',
-                    'thursday': 'Donnerstag',
-                    'friday': 'Freitag',
-                    'saturday': 'Samstag',
-                    'sunday': 'Sonntag'
-                } %}
+        <hr class="my-4">
 
-                {% for day_en, day_de in days.items() %}
-                    {% set hours = opening_hours|selectattr('day', 'equalto', day_en)|first %}
-                    <div class="day-row">
-                        <div class="day-name">{{ day_de }}</div>
-                        <div class="hours-inputs">
-                            <input type="time" name="{{ day_en }}_open" value="{{ hours.open_time if hours else '00:00' }}"
-                                   {% if hours and hours.closed %}disabled{% endif %}>
-                            <span>bis</span>
-                            <input type="time" name="{{ day_en }}_close" value="{{ hours.close_time if hours else '00:00' }}"
-                                   {% if hours and hours.closed %}disabled{% endif %}>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="{{ day_en }}_closed" 
-                                       {% if hours and hours.closed %}checked{% endif %}
-                                       onchange="toggleTimeInputs(this, '{{ day_en }}')">
-                                Ruhetag
-                            </label>
+        <h2>Öffnungszeiten</h2>
+        <form action="{{ url_for('update_hours') }}" method="post" class="mb-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Öffnungszeit</th>
+                            <th>Schließzeit</th>
+                            <th>Geschlossen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hours in opening_hours %}
+                        <tr>
+                            <td>
+                                {% if hours.day == 'monday' %}Montag
+                                {% elif hours.day == 'tuesday' %}Dienstag
+                                {% elif hours.day == 'wednesday' %}Mittwoch
+                                {% elif hours.day == 'thursday' %}Donnerstag
+                                {% elif hours.day == 'friday' %}Freitag
+                                {% elif hours.day == 'saturday' %}Samstag
+                                {% elif hours.day == 'sunday' %}Sonntag
+                                {% endif %}
+                            </td>
+                            <td>
+                                <input type="time" name="{{ hours.day }}_open" value="{{ hours.open_time }}"
+                                       class="form-control" {% if hours.closed %}disabled{% endif %}>
+                            </td>
+                            <td>
+                                <input type="time" name="{{ hours.day }}_close" value="{{ hours.close_time }}"
+                                       class="form-control" {% if hours.closed %}disabled{% endif %}>
+                            </td>
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" name="{{ hours.day }}_closed" class="form-check-input"
+                                           {% if hours.closed %}checked{% endif %}
+                                           onchange="toggleTimeInputs(this, '{{ hours.day }}')">
+                                    <label class="form-check-label">Ruhetag</label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-primary">Öffnungszeiten speichern</button>
+        </form>
+    </div>
+
+    <!-- Modal für neue Speisen -->
+    <div class="modal fade" id="addFoodModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Neues Gericht hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('add_menu_item') }}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Kategorie</label>
+                            <select name="category" class="form-select" required>
+                                {% for category in categories if not category.is_drink_category %}
+                                    <option value="{{ category.name }}">{{ category.display_name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Beschreibung</label>
+                            <textarea name="description" class="form-control"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Preis (€)</label>
+                            <input type="number" name="price" class="form-control" step="0.1" required>
+                        </div>
+                        <input type="hidden" name="is_drink" value="false">
                     </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-primary">Öffnungszeiten speichern</button>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Add Item Modal -->
-    <div id="addItemModal" class="modal">
-        <div class="modal-content">
-            <h3>Neues Gericht hinzufügen</h3>
-            <form action="{{ url_for('add_menu_item') }}" method="POST">
-                <div class="form-group">
-                    <label>Kategorie</label>
-                    <select name="category" required>
-                        <option value="Vorspeisen">Vorspeisen</option>
-                        <option value="Hauptgerichte">Hauptgerichte</option>
-                        <option value="Desserts">Desserts</option>
-                    </select>
+    <!-- Modal für neue Getränke -->
+    <div class="modal fade" id="addDrinkModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Neues Getränk hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label>Beschreibung</label>
-                    <textarea name="description"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Preis (€)</label>
-                    <input type="number" name="price" step="0.10" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="toggleModal('addItemModal')">Abbrechen</button>
-                    <button type="submit" class="btn btn-primary">Hinzufügen</button>
-                </div>
-            </form>
+                <form action="{{ url_for('add_menu_item') }}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Kategorie</label>
+                            <select name="category" class="form-select" required>
+                                {% for category in categories if category.is_drink_category %}
+                                    <option value="{{ category.name }}">{{ category.display_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unterkategorie</label>
+                            <input type="text" name="subcategory" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Menge (z.B. "0,2l" oder "4cl")</label>
+                            <input type="text" name="unit" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Preis (€)</label>
+                            <input type="number" name="price" class="form-control" step="0.1" required>
+                        </div>
+                        <input type="hidden" name="is_drink" value="true">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function toggleModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
-        }
-
         function toggleTimeInputs(checkbox, day) {
             const openInput = document.querySelector(`input[name="${day}_open"]`);
             const closeInput = document.querySelector(`input[name="${day}_close"]`);
@@ -170,11 +301,9 @@
             closeInput.disabled = checkbox.checked;
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
+        function editItem(itemId) {
+            // TODO: Implement edit functionality
+            alert('Edit functionality coming soon!');
         }
     </script>
 </body>
