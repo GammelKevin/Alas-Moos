@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alas Moos - Griechisches Restaurant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">
+                        <a href="{{ url_for('home') }}">Alas Moos</a>
+                    </div>
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('home') }}">Home</a></li>
+                        <li><a href="{{ url_for('menu') }}">Speisekarte</a></li>
+                        <li><a href="{{ url_for('home') }}#about">Über uns</a></li>
+                        <li><a href="{{ url_for('home') }}#contact">Kontakt</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Kontakt</h3>
+                    <p>Telefon: 08441 2206</p>
+                    <p>Email: info@alasmoos.de</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Adresse</h3>
+                    <p>Alas Moos</p>
+                    <p>Münchener Str. 127</p>
+                    <p>85051 Ingolstadt</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Folgen Sie uns</h3>
+                    <div class="social-links">
+                        <a href="#" target="_blank">Facebook</a>
+                        <a href="#" target="_blank">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Alas Moos. Alle Rechte vorbehalten.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

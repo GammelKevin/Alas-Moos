@@ -1,35 +1,33 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_mail import Mail, Message
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
-from dotenv import load_dotenv
 from database import db, MenuItem, MenuCategory, OpeningHours, Admin
 from admin_routes import admin_bp
 
-load_dotenv()
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-123')
-
-# Datenbank-Konfiguration
-DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///restaurant.db'
+app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Mail-Konfiguration
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+# Datenbank-Konfiguration
+# DATABASE_URL = os.getenv('DATABASE_URL')
+# if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+#     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///restaurant.db'
 
-# Extensions initialisieren
+# Mail-Konfiguration
+# app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+# app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
+# app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+# app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+# app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+# app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+# Initialisiere die Datenbank
 db.init_app(app)
-mail = Mail(app)
+
+# Initialisiere Login-Manager
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'admin_login'
@@ -39,13 +37,11 @@ app.register_blueprint(admin_bp)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(Admin, int(user_id))
+    return Admin.query.get(int(user_id))
 
 # Funktion zum Initialisieren der Datenbank
 def init_db():
-    # Alle Tabellen löschen und neu erstellen
     with app.app_context():
-        db.drop_all()
         db.create_all()
     
     # Prüfe, ob bereits Kategorien existieren
@@ -115,15 +111,11 @@ def init_db():
         db.session.add(admin)
         db.session.commit()
 
-# Datenbank beim Start initialisieren
-with app.app_context():
-    init_db()
-
 @app.route('/')
 def home():
-    menu_items = db.session.query(MenuItem).filter_by(active=True, is_drink=False).all()
-    drink_items = db.session.query(MenuItem).filter_by(active=True, is_drink=True).all()
-    categories = db.session.query(MenuCategory).filter_by(active=True).order_by(MenuCategory.order).all()
+    menu_items = MenuItem.query.filter_by(active=True, is_drink=False).all()
+    drink_items = MenuItem.query.filter_by(active=True, is_drink=True).all()
+    categories = MenuCategory.query.filter_by(active=True).order_by(MenuCategory.order).all()
     opening_hours = OpeningHours.query.order_by(OpeningHours.id).all()
 
     # Wenn keine Öffnungszeiten existieren, initialisiere die Datenbank neu
@@ -152,7 +144,7 @@ def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = db.session.query(Admin).filter_by(username=username).first()
+        user = Admin.query.filter_by(username=username).first()
         
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
@@ -169,9 +161,9 @@ def admin_logout():
 @app.route('/admin')
 @login_required
 def admin_dashboard():
-    menu_items = db.session.query(MenuItem).all()
-    categories = db.session.query(MenuCategory).order_by(MenuCategory.order).all()
-    opening_hours = db.session.query(OpeningHours).all()
+    menu_items = MenuItem.query.all()
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    opening_hours = OpeningHours.query.all()
     return render_template('admin/dashboard.html', 
                          menu_items=menu_items,
                          categories=categories,
@@ -197,7 +189,7 @@ def add_menu_item():
 @app.route('/admin/menu/edit/<int:id>', methods=['POST'])
 @login_required
 def edit_menu_item(id):
-    item = db.session.get(MenuItem, id)
+    item = MenuItem.query.get(id)
     if not item:
         return redirect(url_for('admin_dashboard'))
     
@@ -216,7 +208,7 @@ def edit_menu_item(id):
 @app.route('/admin/menu/delete/<int:id>')
 @login_required
 def delete_menu_item(id):
-    item = db.session.get(MenuItem, id)
+    item = MenuItem.query.get(id)
     if item:
         db.session.delete(item)
         db.session.commit()
@@ -227,7 +219,7 @@ def delete_menu_item(id):
 def update_hours():
     data = request.form
     for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
-        hours = db.session.query(OpeningHours).filter_by(day=day).first()
+        hours = OpeningHours.query.filter_by(day=day).first()
         if not hours:
             hours = OpeningHours(day=day)
             db.session.add(hours)
@@ -257,14 +249,19 @@ def reservierung():
     try:
         msg = Message(
             'Neue Reservierungsanfrage',
-            recipients=[os.getenv('MAIL_DEFAULT_SENDER')],
+            recipients=['your-email@example.com'],  # Bitte ersetzen Sie durch Ihre E-Mail-Adresse
             body=msg_body
         )
+        mail = Mail(app)
         mail.send(msg)
         return jsonify({'success': True}), 200
     except Exception as e:
         print(f"Fehler beim Senden der E-Mail: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# Initialisiere die Datenbank beim Start
+with app.app_context():
+    init_db()
 
 if __name__ == '__main__':
     app.run(debug=True)

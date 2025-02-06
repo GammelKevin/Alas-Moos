@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+<div class="admin-grid">
+    <div class="admin-card">
+        <h2>Speisekarte verwalten</h2>
+        <p>Fügen Sie neue Gerichte hinzu oder bearbeiten Sie bestehende.</p>
+        <a href="{{ url_for('admin.menu') }}" class="btn btn-primary">Zur Speisekarte</a>
+    </div>
+
+    <div class="admin-card">
+        <h2>Öffnungszeiten</h2>
+        <p>Passen Sie die Öffnungszeiten Ihres Restaurants an.</p>
+        <a href="{{ url_for('admin.opening_hours') }}" class="btn btn-primary">Öffnungszeiten bearbeiten</a>
+    </div>
+</div>
+{% endblock %}
