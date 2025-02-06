@@ -266,20 +266,20 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Unterkategorie</label>
-                            <input type="text" name="subcategory" class="form-control">
-                        </div>
-                        <div class="mb-3">
                             <label class="form-label">Name</label>
                             <input type="text" name="name" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Menge (z.B. "0,2l" oder "4cl")</label>
-                            <input type="text" name="unit" class="form-control">
+                            <label class="form-label">Beschreibung</label>
+                            <textarea name="description" class="form-control"></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Preis (€)</label>
                             <input type="number" name="price" class="form-control" step="0.1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Einheit (z.B. 0,2l)</label>
+                            <input type="text" name="unit" class="form-control">
                         </div>
                         <input type="hidden" name="is_drink" value="true">
                     </div>

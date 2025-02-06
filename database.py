@@ -7,7 +7,6 @@ db = SQLAlchemy()
 class MenuItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(100), nullable=False)
-    subcategory = db.Column(db.String(100))  # Für Unterkategorien wie "Rotwein" unter "Weine"
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     price = db.Column(db.Float, nullable=False)

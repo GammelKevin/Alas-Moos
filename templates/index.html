@@ -94,23 +94,24 @@
         <div class="container">
             <h2>Öffnungszeiten</h2>
             <div class="hours-grid">
-                {% for hours in opening_hours %}
-                    <div class="day-hours {% if hours.closed %}closed{% endif %}">
-                        <span class="day">
-                            {% if hours.day == 'monday' %}Montag
-                            {% elif hours.day == 'tuesday' %}Dienstag
-                            {% elif hours.day == 'wednesday' %}Mittwoch
-                            {% elif hours.day == 'thursday' %}Donnerstag
-                            {% elif hours.day == 'friday' %}Freitag
-                            {% elif hours.day == 'saturday' %}Samstag
-                            {% elif hours.day == 'sunday' %}Sonntag
-                            {% endif %}
-                        </span>
+                {% set days = {
+                    'monday': 'Montag',
+                    'tuesday': 'Dienstag',
+                    'wednesday': 'Mittwoch',
+                    'thursday': 'Donnerstag',
+                    'friday': 'Freitag',
+                    'saturday': 'Samstag',
+                    'sunday': 'Sonntag'
+                } %}
+                {% for day_en, day_de in days.items() %}
+                    {% set hour = opening_hours|selectattr('day', 'equalto', day_en)|first %}
+                    <div class="day-hours {% if hour and hour.closed %}closed{% endif %}">
+                        <span class="day">{{ day_de }}</span>
                         <span class="hours">
-                            {% if hours.closed %}
+                            {% if hour and hour.closed %}
                                 Ruhetag
                             {% else %}
-                                {{ hours.open_time }} - {{ hours.close_time }} Uhr
+                                {{ hour.open_time }} - {{ hour.close_time }} Uhr
                             {% endif %}
                         </span>
                     </div>

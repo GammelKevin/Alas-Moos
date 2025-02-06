@@ -155,7 +155,6 @@ def add_menu_item():
     data = request.form
     item = MenuItem(
         category=data['category'],
-        subcategory=data.get('subcategory'),
         name=data['name'],
         description=data.get('description'),
         price=float(data['price']),
@@ -176,7 +175,6 @@ def edit_menu_item(id):
     
     data = request.form
     item.category = data['category']
-    item.subcategory = data.get('subcategory')
     item.name = data['name']
     item.description = data.get('description')
     item.price = float(data['price'])
