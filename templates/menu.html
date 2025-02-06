@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -58,6 +61,72 @@
         </div>
     </section>
 
+    <section class="menu-section" id="menu">
+        <div class="container">
+            <h2>Speisekarte</h2>
+            
+            <!-- Speisen -->
+            <div class="menu-category">
+                <h3>Speisen</h3>
+                {% for category in categories %}
+                    {% if not category.is_drink_category %}
+                        <div class="category-section">
+                            <h4>{{ category.display_name }}</h4>
+                            <div class="menu-items">
+                                {% for item in menu_items %}
+                                    {% if item.category_id == category.id %}
+                                        <div class="menu-item">
+                                            <div class="menu-item-header">
+                                                <h5>{{ item.name }}</h5>
+                                                <span class="price">{{ "%.2f"|format(item.price) }}€</span>
+                                            </div>
+                                            {% if item.description %}
+                                                <p class="description">{{ item.description }}</p>
+                                            {% endif %}
+                                            {% if item.unit %}
+                                                <span class="unit">{{ item.unit }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Getränke -->
+            <div class="menu-category">
+                <h3>Getränke</h3>
+                {% for category in categories %}
+                    {% if category.is_drink_category %}
+                        <div class="category-section">
+                            <h4>{{ category.display_name }}</h4>
+                            <div class="menu-items">
+                                {% for item in drink_items %}
+                                    {% if item.category_id == category.id %}
+                                        <div class="menu-item">
+                                            <div class="menu-item-header">
+                                                <h5>{{ item.name }}</h5>
+                                                <span class="price">{{ "%.2f"|format(item.price) }}€</span>
+                                            </div>
+                                            {% if item.description %}
+                                                <p class="description">{{ item.description }}</p>
+                                            {% endif %}
+                                            {% if item.unit %}
+                                                <span class="unit">{{ item.unit }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -102,3 +171,4 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+{% endblock %}

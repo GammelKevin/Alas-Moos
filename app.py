@@ -5,12 +5,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
 from database import db, MenuItem, MenuCategory, OpeningHours, Admin
+from admin_routes import admin_bp
 
 load_dotenv()
 
 app = Flask(__name__)
-
-# Konfiguration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-123')
 
 # Datenbank-Konfiguration
@@ -34,6 +33,13 @@ mail = Mail(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'admin_login'
+
+# Registriere die Admin-Routes
+app.register_blueprint(admin_bp)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(Admin, int(user_id))
 
 # Funktion zum Initialisieren der Datenbank
 def init_db():
@@ -112,10 +118,6 @@ def init_db():
 # Datenbank beim Start initialisieren
 with app.app_context():
     init_db()
-
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.get(Admin, int(user_id))
 
 @app.route('/')
 def home():
