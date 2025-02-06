@@ -9,7 +9,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 def index():
     return render_template('admin/index.html')
 
-@admin_bp.route('/opening-hours', methods=['GET', 'POST'])
+@admin_bp.route('/opening-hours', methods=['GET'])
 @login_required
 def opening_hours():
     hours = OpeningHours.query.order_by(OpeningHours.id).all()
@@ -24,28 +24,33 @@ def update_opening_hours():
         
         # Für jede ID
         for id in ids:
-            # Hole die entsprechenden Werte
-            hour = OpeningHours.query.get(id)
+            hour = OpeningHours.query.get(int(id))
             if hour:
                 # Prüfe, ob dieser Tag als geschlossen markiert wurde
-                is_closed = id in request.form.getlist('closed[]')
+                is_closed = str(id) in request.form.getlist('closed[]')
                 
                 # Update die Werte
                 hour.closed = is_closed
-                if not is_closed:
-                    # Nur die Zeiten updaten, wenn der Tag nicht geschlossen ist
-                    idx = ids.index(id)  # Position in der Liste finden
-                    hour.open_time = request.form.getlist('open_times[]')[idx]
-                    hour.close_time = request.form.getlist('close_times[]')[idx]
+                
+                # Finde den Index in der Liste
+                idx = ids.index(id)
+                
+                # Update die Zeiten
+                open_times = request.form.getlist('open_times[]')
+                close_times = request.form.getlist('close_times[]')
+                
+                if idx < len(open_times) and idx < len(close_times):
+                    hour.open_time = open_times[idx]
+                    hour.close_time = close_times[idx]
 
         # Änderungen speichern
         db.session.commit()
         flash('Öffnungszeiten wurden erfolgreich aktualisiert!', 'success')
         
     except Exception as e:
-        print(f"Error: {str(e)}")  # Für Debugging
+        print(f"Error updating opening hours: {str(e)}")  # Für Debugging
         db.session.rollback()
-        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}', 'error')
+        flash('Fehler beim Speichern der Öffnungszeiten!', 'error')
 
     return redirect(url_for('admin.opening_hours'))
 

@@ -139,7 +139,13 @@ def home():
 
 @app.route('/menu')
 def menu():
-    return redirect(url_for('home') + '#menu')
+    menu_items = MenuItem.query.filter_by(active=True, is_drink=False).all()
+    drink_items = MenuItem.query.filter_by(active=True, is_drink=True).all()
+    categories = MenuCategory.query.filter_by(active=True).order_by(MenuCategory.order).all()
+    return render_template('menu.html', 
+                         menu_items=menu_items,
+                         drink_items=drink_items,
+                         categories=categories)
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
