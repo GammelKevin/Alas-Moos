@@ -19,25 +19,31 @@ def opening_hours():
 @login_required
 def update_opening_hours():
     try:
+        # Hole alle IDs
         ids = request.form.getlist('ids[]')
-        days = request.form.getlist('days[]')
-        day_displays = request.form.getlist('day_displays[]')
-        open_times = request.form.getlist('open_times[]')
-        close_times = request.form.getlist('close_times[]')
-        closed = request.form.getlist('closed[]')
-
-        for i, id in enumerate(ids):
+        
+        # Für jede ID
+        for id in ids:
+            # Hole die entsprechenden Werte
             hour = OpeningHours.query.get(id)
             if hour:
-                hour.day = days[i]
-                hour.day_display = day_displays[i]
-                hour.open_time = open_times[i]
-                hour.close_time = close_times[i]
-                hour.closed = str(id) in closed
+                # Prüfe, ob dieser Tag als geschlossen markiert wurde
+                is_closed = id in request.form.getlist('closed[]')
+                
+                # Update die Werte
+                hour.closed = is_closed
+                if not is_closed:
+                    # Nur die Zeiten updaten, wenn der Tag nicht geschlossen ist
+                    idx = ids.index(id)  # Position in der Liste finden
+                    hour.open_time = request.form.getlist('open_times[]')[idx]
+                    hour.close_time = request.form.getlist('close_times[]')[idx]
 
+        # Änderungen speichern
         db.session.commit()
         flash('Öffnungszeiten wurden erfolgreich aktualisiert!', 'success')
+        
     except Exception as e:
+        print(f"Error: {str(e)}")  # Für Debugging
         db.session.rollback()
         flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}', 'error')
 

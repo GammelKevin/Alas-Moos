@@ -1,174 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speisekarte - Restaurant ALAS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
-</head>
-<body>
-    <nav class="navbar">
-        <div class="nav-brand">ALAS</div>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/menu" class="active">Speisekarte</a>
-            <a href="/#about">Über Uns</a>
-            <a href="/#kontakt">Reservieren</a>
-        </div>
-        <div class="menu-btn">
-            <div class="menu-btn__burger"></div>
-        </div>
-    </nav>
-
-    <div class="menu-hero">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1>Unsere Speisekarte</h1>
-            <p>Traditionelle griechische Küche</p>
-        </div>
-    </div>
-
-    <section class="menu-section">
-        <div class="container">
-            {% set categories = ['Vorspeisen', 'Hauptgerichte', 'Desserts'] %}
-            
+<section class="menu-section" id="menu">
+    <div class="container">
+        <h2>Speisekarte</h2>
+        
+        <!-- Speisen -->
+        <div class="menu-category">
+            <h3>Speisen</h3>
             {% for category in categories %}
-                {% set items = menu_items|selectattr('category', 'equalto', category)|list %}
-                {% if items %}
-                    <div class="menu-category">
-                        <h2>{{ category }}</h2>
+                {% if not category.is_drink_category %}
+                    <div class="category-section">
+                        <h4>{{ category.display_name }}</h4>
                         <div class="menu-items">
-                            {% for item in items %}
-                                <div class="menu-item">
-                                    <div class="item-header">
-                                        <h3>{{ item.name }}</h3>
-                                        <span class="price">{{ "%.2f"|format(item.price) }} €</span>
+                            {% for item in menu_items %}
+                                {% if item.category_id == category.id %}
+                                    <div class="menu-item">
+                                        <div class="menu-item-header">
+                                            <h5>{{ item.name }}</h5>
+                                            <span class="price">{{ "%.2f"|format(item.price) }}€</span>
+                                        </div>
+                                        {% if item.description %}
+                                            <p class="description">{{ item.description }}</p>
+                                        {% endif %}
+                                        {% if item.unit %}
+                                            <span class="unit">{{ item.unit }}</span>
+                                        {% endif %}
                                     </div>
-                                    {% if item.description %}
-                                        <p class="description">{{ item.description }}</p>
-                                    {% endif %}
-                                </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
                 {% endif %}
             {% endfor %}
         </div>
-    </section>
-
-    <section class="menu-section" id="menu">
-        <div class="container">
-            <h2>Speisekarte</h2>
-            
-            <!-- Speisen -->
-            <div class="menu-category">
-                <h3>Speisen</h3>
-                {% for category in categories %}
-                    {% if not category.is_drink_category %}
-                        <div class="category-section">
-                            <h4>{{ category.display_name }}</h4>
-                            <div class="menu-items">
-                                {% for item in menu_items %}
-                                    {% if item.category_id == category.id %}
-                                        <div class="menu-item">
-                                            <div class="menu-item-header">
-                                                <h5>{{ item.name }}</h5>
-                                                <span class="price">{{ "%.2f"|format(item.price) }}€</span>
-                                            </div>
-                                            {% if item.description %}
-                                                <p class="description">{{ item.description }}</p>
-                                            {% endif %}
-                                            {% if item.unit %}
-                                                <span class="unit">{{ item.unit }}</span>
-                                            {% endif %}
+        
+        <!-- Getränke -->
+        <div class="menu-category">
+            <h3>Getränke</h3>
+            {% for category in categories %}
+                {% if category.is_drink_category %}
+                    <div class="category-section">
+                        <h4>{{ category.display_name }}</h4>
+                        <div class="menu-items">
+                            {% for item in drink_items %}
+                                {% if item.category_id == category.id %}
+                                    <div class="menu-item">
+                                        <div class="menu-item-header">
+                                            <h5>{{ item.name }}</h5>
+                                            <span class="price">{{ "%.2f"|format(item.price) }}€</span>
                                         </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
+                                        {% if item.description %}
+                                            <p class="description">{{ item.description }}</p>
+                                        {% endif %}
+                                        {% if item.unit %}
+                                            <span class="unit">{{ item.unit }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Getränke -->
-            <div class="menu-category">
-                <h3>Getränke</h3>
-                {% for category in categories %}
-                    {% if category.is_drink_category %}
-                        <div class="category-section">
-                            <h4>{{ category.display_name }}</h4>
-                            <div class="menu-items">
-                                {% for item in drink_items %}
-                                    {% if item.category_id == category.id %}
-                                        <div class="menu-item">
-                                            <div class="menu-item-header">
-                                                <h5>{{ item.name }}</h5>
-                                                <span class="price">{{ "%.2f"|format(item.price) }}€</span>
-                                            </div>
-                                            {% if item.description %}
-                                                <p class="description">{{ item.description }}</p>
-                                            {% endif %}
-                                            {% if item.unit %}
-                                                <span class="unit">{{ item.unit }}</span>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Kontakt</h3>
-                    <p>Telefon: +49 123 456789</p>
-                    <p>Email: info@alas.de</p>
-                    <p>Adresse: Musterstraße 123, 12345 Stadt</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Öffnungszeiten</h3>
-                    {% for hours in opening_hours %}
-                        <p>
-                            {% if hours.day == 'monday' %}Montag
-                            {% elif hours.day == 'tuesday' %}Dienstag
-                            {% elif hours.day == 'wednesday' %}Mittwoch
-                            {% elif hours.day == 'thursday' %}Donnerstag
-                            {% elif hours.day == 'friday' %}Freitag
-                            {% elif hours.day == 'saturday' %}Samstag
-                            {% elif hours.day == 'sunday' %}Sonntag
-                            {% endif %}:
-                            {% if hours.closed %}
-                                Ruhetag
-                            {% else %}
-                                {{ hours.open_time }} - {{ hours.close_time }} Uhr
-                            {% endif %}
-                        </p>
-                    {% endfor %}
-                </div>
-                <div class="footer-section">
-                    <h3>Folgen Sie uns</h3>
-                    <div class="social-links">
-                        <a href="#" class="fab fa-facebook"></a>
-                        <a href="#" class="fab fa-instagram"></a>
-                        <a href="#" class="fab fa-twitter"></a>
                     </div>
-                </div>
-            </div>
+                {% endif %}
+            {% endfor %}
         </div>
-    </footer>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+    </div>
+</section>
 {% endblock %}

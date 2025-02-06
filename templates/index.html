@@ -95,15 +95,15 @@
             <h2>Öffnungszeiten</h2>
             <div class="opening-hours-grid">
                 {% for hour in opening_hours %}
-                    <div class="opening-hours-item">
-                        <span class="day">{{ hour.day_display }}</span>
-                        <span class="hours">
+                    <div class="opening-hours-item {% if hour.closed %}closed{% endif %}">
+                        <div class="day">{{ hour.day_display }}</div>
+                        <div class="hours">
                             {% if hour.closed %}
                                 Ruhetag
                             {% else %}
                                 {{ hour.open_time }} - {{ hour.close_time }} Uhr
                             {% endif %}
-                        </span>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
