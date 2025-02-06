@@ -4,13 +4,15 @@
 <div class="menu-page">
     <!-- Hero Section -->
     <div class="menu-hero">
+        <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1>Unsere Speisekarte</h1>
             <p>Traditionelle griechische Küche</p>
         </div>
+        <img src="{{ url_for('static', filename='images/greek-food.jpg') }}" alt="Greek Food" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; object-fit: cover; z-index: 0;">
     </div>
 
-    <div class="menu-container">
+    <div class="menu-content">
         <!-- Speisen -->
         <div class="menu-section food-section">
             <div class="section-header">
@@ -20,21 +22,19 @@
 
             {% for category in categories %}
                 {% if not category.is_drink_category %}
-                    <div class="category-section">
+                    <div class="category-block">
                         <h3>{{ category.display_name }}</h3>
-                        <div class="menu-items">
+                        <div class="menu-grid">
                             {% for item in food_items %}
                                 {% if item.category_id == category.id and item.active %}
                                     <div class="menu-item">
-                                        <div class="item-content">
-                                            <div class="item-header">
-                                                <h4>{{ item.name }}</h4>
-                                                <div class="price-tag">{{ "%.2f"|format(item.price) }} €</div>
-                                            </div>
-                                            {% if item.description %}
-                                                <p class="description">{{ item.description }}</p>
-                                            {% endif %}
+                                        <div class="item-header">
+                                            <h4 class="item-name">{{ item.name }}</h4>
+                                            <div class="item-price">{{ "%.2f"|format(item.price) }} €</div>
                                         </div>
+                                        {% if item.description %}
+                                            <p class="item-description">{{ item.description }}</p>
+                                        {% endif %}
                                     </div>
                                 {% endif %}
                             {% endfor %}
@@ -53,22 +53,20 @@
 
             {% for category in categories %}
                 {% if category.is_drink_category %}
-                    <div class="category-section">
+                    <div class="category-block">
                         <h3>{{ category.display_name }}</h3>
-                        <div class="menu-items">
+                        <div class="menu-grid">
                             {% for item in drink_items %}
                                 {% if item.category_id == category.id and item.active %}
                                     <div class="menu-item">
-                                        <div class="item-content">
-                                            <div class="item-header">
-                                                <h4>
-                                                    {{ item.name }}
-                                                    {% if item.unit %}
-                                                        <span class="unit">({{ item.unit }})</span>
-                                                    {% endif %}
-                                                </h4>
-                                                <div class="price-tag">{{ "%.2f"|format(item.price) }} €</div>
-                                            </div>
+                                        <div class="item-header">
+                                            <h4 class="item-name">
+                                                {{ item.name }}
+                                                {% if item.unit %}
+                                                    <span class="unit">({{ item.unit }})</span>
+                                                {% endif %}
+                                            </h4>
+                                            <div class="item-price">{{ "%.2f"|format(item.price) }} €</div>
                                         </div>
                                     </div>
                                 {% endif %}
@@ -83,32 +81,43 @@
 
 <style>
 /* Basis-Styles */
-.menu-page {
-    background-color: #f8f7f3;
-    min-height: 100vh;
+body {
+    background: #1a1a1a;
+    color: #fff;
 }
 
 /* Hero Section */
 .menu-hero {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ url_for("static", filename="images/greek-food.jpg") }}');
+    height: 400px;
     background-size: cover;
     background-position: center;
-    height: 400px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
     color: white;
-    position: relative;
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .hero-content {
-    z-index: 2;
+    position: relative;
+    z-index: 1;
+    padding: 20px;
 }
 
 .hero-content h1 {
     font-size: 3.5em;
-    margin-bottom: 0.5em;
+    margin-bottom: 20px;
     font-family: 'Playfair Display', serif;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -119,113 +128,122 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Container und Sections */
-.menu-container {
+/* Menu Content */
+.menu-content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 0 20px;
 }
 
 .menu-section {
     margin-bottom: 60px;
-    background: white;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
     text-align: center;
     margin-bottom: 40px;
-    position: relative;
 }
 
 .section-header h2 {
-    color: #2c3e50;
-    font-size: 2.5em;
-    margin-bottom: 20px;
     font-family: 'Playfair Display', serif;
+    font-size: 2.5em;
+    color: #e19b4c;
+    margin-bottom: 20px;
 }
 
 .greek-pattern {
     height: 20px;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 L10 0 L20 5 L30 0 L40 5 L50 0 L60 5 L70 0 L80 5 L90 0 L100 5" fill="none" stroke="%23c17817" stroke-width="1"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0 5 L10 0 L20 5 L30 0 L40 5 L50 0 L60 5 L70 0 L80 5 L90 0 L100 5" fill="none" stroke="%23e19b4c" stroke-width="1"/></svg>');
     background-repeat: repeat-x;
     background-size: 40px;
-    opacity: 0.6;
+    opacity: 0.8;
+    margin: 0 auto;
+    max-width: 300px;
 }
 
-/* Kategorien */
-.category-section {
+.category-block {
     margin-bottom: 40px;
+    background: #2a2a2a;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.category-section h3 {
-    color: #c17817;
+.category-block h3 {
+    font-family: 'Playfair Display', serif;
     font-size: 1.8em;
+    color: #fff;
     margin-bottom: 25px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #c17817;
-    font-family: 'Playfair Display', serif;
+    border-bottom: 2px solid #e19b4c;
 }
 
-/* Menu Items */
-.menu-items {
+.menu-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 25px;
 }
 
 .menu-item {
-    background: #fff;
+    padding: 20px;
+    background: #333;
     border-radius: 10px;
-    overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .menu-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.item-content {
-    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    background: #3a3a3a;
 }
 
 .item-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
     margin-bottom: 10px;
 }
 
-.item-header h4 {
-    color: #2c3e50;
-    font-size: 1.3em;
+.item-name {
+    font-size: 1.2em;
+    color: #fff;
     margin: 0;
     font-weight: 600;
 }
 
 .unit {
     font-size: 0.8em;
-    color: #666;
+    color: #aaa;
     margin-left: 5px;
+    font-weight: normal;
 }
 
-.price-tag {
-    background: #c17817;
-    color: white;
+.item-price {
+    color: #fff;
+    background: #e19b4c;
     padding: 5px 10px;
     border-radius: 20px;
     font-weight: 600;
 }
 
-.description {
-    color: #666;
-    font-size: 0.95em;
+.item-description {
+    color: #bbb;
+    font-size: 0.9em;
     line-height: 1.5;
     margin: 0;
+}
+
+/* Drink Section Specific Styles */
+.drinks-section .menu-item {
+    background: #2d2d2d;
+}
+
+.drinks-section .menu-item:hover {
+    background: #353535;
+}
+
+.drinks-section .item-price {
+    background: #4a90e2;
 }
 
 /* Responsive Design */
@@ -242,26 +260,17 @@
         font-size: 1.2em;
     }
 
-    .menu-section {
+    .category-block {
         padding: 20px;
     }
 
-    .menu-items {
+    .menu-grid {
         grid-template-columns: 1fr;
     }
 
     .section-header h2 {
         font-size: 2em;
     }
-}
-
-/* Spezielle Styles für Getränke */
-.drinks-section .menu-item {
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-}
-
-.drinks-section .price-tag {
-    background: #2c3e50;
 }
 </style>
 
