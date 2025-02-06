@@ -46,61 +46,32 @@ def init_db():
     if MenuCategory.query.count() == 0:
         # Standard-Kategorien erstellen
         categories = [
-            # Speisen
-            ('starters', 'Vorspeisen', False),
-            ('soups', 'Suppen', False),
-            ('salads', 'Salate', False),
-            ('lunch', 'Mittagsangebot', False),
-            ('fish', 'Fischgerichte', False),
-            ('vegetarian', 'Vegetarische Gerichte', False),
-            ('steaks', 'Steak vom Grill', False),
-            ('desserts', 'Desserts', False),
-            # Getränke
-            ('softdrinks', 'Alkoholfreie Getränke', True),
-            ('beer', 'Biere', True),
-            ('wine', 'Weine', True),
-            ('spirits', 'Spirituosen', True)
+            MenuCategory(name='Vorspeisen'),
+            MenuCategory(name='Hauptgerichte'),
+            MenuCategory(name='Desserts'),
+            MenuCategory(name='Getränke')
         ]
-        
-        for order, (name, display_name, is_drink) in enumerate(categories):
-            category = MenuCategory(
-                name=name,
-                display_name=display_name,
-                is_drink_category=is_drink,
-                order=order,
-                active=True
-            )
-            db.session.add(category)
-        
+        db.session.add_all(categories)
         db.session.commit()
 
     # Prüfe, ob bereits Öffnungszeiten existieren
     if OpeningHours.query.count() == 0:
         # Standard-Öffnungszeiten erstellen
         opening_hours = [
-            ('Montag', '11:30', '14:30', True),
-            ('Dienstag', '11:30', '14:30', False),
-            ('Mittwoch', '11:30', '14:30', False),
-            ('Donnerstag', '11:30', '14:30', False),
-            ('Freitag', '11:30', '14:30', False),
-            ('Samstag', '17:00', '23:00', False),
-            ('Sonntag', '11:30', '14:30', False)
+            OpeningHours(day='Montag', open_time='11:30', close_time='22:00'),
+            OpeningHours(day='Dienstag', open_time='11:30', close_time='22:00'),
+            OpeningHours(day='Mittwoch', open_time='11:30', close_time='22:00'),
+            OpeningHours(day='Donnerstag', open_time='11:30', close_time='22:00'),
+            OpeningHours(day='Freitag', open_time='11:30', close_time='23:00'),
+            OpeningHours(day='Samstag', open_time='11:30', close_time='23:00'),
+            OpeningHours(day='Sonntag', open_time='11:30', close_time='22:00')
         ]
-        
-        for day, open_time, close_time, closed in opening_hours:
-            hours = OpeningHours(
-                day=day,
-                open_time=open_time,
-                close_time=close_time,
-                closed=closed
-            )
-            db.session.add(hours)
-        
+        db.session.add_all(opening_hours)
         db.session.commit()
 
-    # Prüfe, ob bereits ein Admin existiert
+    # Prüfe, ob bereits ein Admin-Account existiert
     if Admin.query.count() == 0:
-        # Standard-Admin erstellen
+        # Standard Admin-Account erstellen
         admin = Admin(
             username='admin',
             password_hash=generate_password_hash('admin123')
