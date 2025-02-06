@@ -1,0 +1,204 @@
+/* Menu Page Styles */
+.menu-hero {
+    height: 60vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-hero .hero-image {
+    background: url('../static/images/menu-hero.jpg') no-repeat center center;
+    animation: zoomOut 1.5s ease-out forwards, kenburns 20s ease-out infinite alternate;
+}
+
+@keyframes kenburns {
+    from {
+        transform: scale(1) translate(0, 0);
+    }
+    to {
+        transform: scale(1.1) translate(-2%, -2%);
+    }
+}
+
+.menu-content {
+    padding: 100px 0;
+    background: var(--light);
+}
+
+.menu-section {
+    margin-bottom: 80px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+}
+
+.menu-section.slide-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.menu-item {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateX(-30px);
+}
+
+.menu-item.fade-slide {
+    animation: fadeSlideIn 0.8s ease-out forwards;
+}
+
+.menu-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item-content {
+    padding: 2rem;
+}
+
+.menu-item h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--dark);
+    margin-bottom: 1rem;
+}
+
+.menu-item .description {
+    color: var(--gray);
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.menu-item .price {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--dark);
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* Morphing Text Animation */
+.morph-text {
+    opacity: 0;
+    animation: morphIn 1s ease-out forwards;
+    position: relative;
+}
+
+.morph-text::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gold);
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: morphReveal 1.5s ease-out forwards;
+}
+
+@keyframes morphIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes morphReveal {
+    0% {
+        transform: scaleX(0);
+    }
+    50% {
+        transform: scaleX(1);
+    }
+    51% {
+        transform-origin: right;
+    }
+    100% {
+        transform: scaleX(0);
+        transform-origin: right;
+    }
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Loading Animation Enhancement */
+.loading-screen {
+    background: var(--dark);
+}
+
+.loader {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.loader::before,
+.loader::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--gold);
+}
+
+.loader::before {
+    animation: spin 1.5s linear infinite;
+}
+
+.loader::after {
+    border-top-color: var(--gold-light);
+    animation: spin 2s linear infinite reverse;
+}
+
+/* Enhanced Loading Screen Exit Animation */
+.loading-screen.exit {
+    animation: none;
+    transform: scale(1.5);
+    opacity: 0;
+    transition: all 0.8s ease-in-out;
+}
+
+.loading-screen.exit .loader {
+    transform: scale(0.5);
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-hero {
+        height: 40vh;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-item {
+        margin: 0 1rem;
+    }
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speisekarte - Restaurant ALAS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">ALAS</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/menu" class="active">Speisekarte</a>
+            <a href="/#about">Über Uns</a>
+            <a href="/#kontakt">Reservieren</a>
+        </div>
+        <div class="menu-btn">
+            <div class="menu-btn__burger"></div>
+        </div>
+    </nav>
+
+    <section class="menu-section">
+        <div class="container">
+            <h2 class="section-title">Unsere Speisekarte</h2>
+            <div class="menu-grid">
+                <div class="menu-category">
+                    <h3>Vorspeisen</h3>
+                    <div class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Tzatziki</h4>
+                            <span class="price">5,50 €</span>
+                        </div>
+                        <p>Joghurt mit Gurken, Knoblauch und Olivenöl</p>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Hummus</h4>
+                            <span class="price">5,90 €</span>
+                        </div>
+                        <p>Kichererbsenpüree mit Sesampaste und Olivenöl</p>
+                    </div>
+                </div>
+                
+                <div class="menu-category">
+                    <h3>Hauptgerichte</h3>
+                    <div class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Gyros Teller</h4>
+                            <span class="price">14,90 €</span>
+                        </div>
+                        <p>Mit Tzatziki, Pommes und Salat</p>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Souvlaki</h4>
+                            <span class="price">15,90 €</span>
+                        </div>
+                        <p>Gegrillte Schweinespieße mit Tzatziki und Pommes</p>
+                    </div>
+                </div>
+
+                <div class="menu-category">
+                    <h3>Desserts</h3>
+                    <div class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Galaktoboureko</h4>
+                            <span class="price">5,90 €</span>
+                        </div>
+                        <p>Grießpudding in Blätterteig mit Honigsirup</p>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Baklava</h4>
+                            <span class="price">5,50 €</span>
+                        </div>
+                        <p>Blätterteig mit Nüssen und Honigsirup</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>ALAS Restaurant</h3>
+                    <p>Bundesstraße 39</p>
+                    <p>94554 Moos, Bayern</p>
+                    <p>Tel: 09938 2320307</p>
+                    <p>⏰ Di-So: 11:30-14:00 & 17:00-22:00</p>
+                    <p>Montag Ruhetag</p>
+                </div>
+                <div class="footer-social">
+                    <h3>Folgen Sie uns</h3>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/p/Griechisches-Restaurant-ALAS-61552077044507/?locale=de_DE" target="_blank" rel="noopener noreferrer" class="social-link">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Restaurant ALAS - Alle Rechte vorbehalten</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
