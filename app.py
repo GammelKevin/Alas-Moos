@@ -112,7 +112,13 @@ def home():
     menu_items = db.session.query(MenuItem).filter_by(active=True, is_drink=False).all()
     drink_items = db.session.query(MenuItem).filter_by(active=True, is_drink=True).all()
     categories = db.session.query(MenuCategory).filter_by(active=True).order_by(MenuCategory.order).all()
-    opening_hours = db.session.query(OpeningHours).all()
+    opening_hours = OpeningHours.query.all()
+
+    # Wenn keine Öffnungszeiten existieren, initialisiere die Datenbank neu
+    if not opening_hours:
+        init_db()
+        opening_hours = OpeningHours.query.all()
+
     return render_template('index.html', 
                          menu_items=menu_items,
                          drink_items=drink_items,
