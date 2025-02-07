@@ -306,6 +306,23 @@ def admin_save_hours():
     
     return redirect(url_for('admin_hours'))
 
+@app.route('/menu')
+def menu():
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    menu_items = MenuItem.query.all()
+    opening_hours = OpeningHours.query.order_by(
+        case(
+            (OpeningHours.day == 'Montag', 1),
+            (OpeningHours.day == 'Dienstag', 2),
+            (OpeningHours.day == 'Mittwoch', 3),
+            (OpeningHours.day == 'Donnerstag', 4),
+            (OpeningHours.day == 'Freitag', 5),
+            (OpeningHours.day == 'Samstag', 6),
+            (OpeningHours.day == 'Sonntag', 7)
+        )
+    ).all()
+    return render_template('menu.html', categories=categories, menu_items=menu_items, opening_hours=opening_hours)
+
 @app.route('/logout')
 @login_required
 def logout():

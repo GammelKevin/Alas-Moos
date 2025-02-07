@@ -1,202 +1,324 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="menu-header">
-    <div class="menu-header-overlay"></div>
-    <h1>Unsere Speisekarte</h1>
-</div>
+<div class="menu-page">
+    <header class="menu-header">
+        <h1>Unsere Speisekarte</h1>
+    </header>
 
-<div class="menu-container">
-    {% for category in categories %}
-    <div class="menu-category">
-        <h2>{{ category.name }}</h2>
-        <div class="menu-items">
-            {% for item in category.items %}
-            <div class="menu-item">
-                {% if item.image_path %}
-                <div class="menu-item-image">
-                    <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}">
-                </div>
+    <div class="menu-content">
+        <!-- Speisen -->
+        {% for category in categories %}
+            {% if not category.is_drink_category %}
+                <section class="menu-section">
+                    <h2>{{ category.display_name }}</h2>
+                    <div class="menu-items">
+                        {% for item in menu_items %}
+                            {% if item.category_id == category.id %}
+                                <div class="menu-item">
+                                    {% if item.image_path %}
+                                        <div class="item-image">
+                                            <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}">
+                                        </div>
+                                    {% endif %}
+                                    <div class="item-content">
+                                        <div class="item-header">
+                                            <h3>{{ item.name }}</h3>
+                                            <span class="price">{{ "%.2f"|format(item.price) }} €</span>
+                                        </div>
+                                        {% if item.description %}
+                                            <p class="description">{{ item.description }}</p>
+                                        {% endif %}
+                                        <div class="item-tags">
+                                            {% if item.vegetarian %}
+                                                <span class="tag vegetarian">Vegetarisch</span>
+                                            {% endif %}
+                                            {% if item.vegan %}
+                                                <span class="tag vegan">Vegan</span>
+                                            {% endif %}
+                                            {% if item.spicy %}
+                                                <span class="tag spicy">Scharf</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Getränke -->
+        <div class="drinks-section">
+            <h2>Getränke</h2>
+            {% for category in categories %}
+                {% if category.is_drink_category %}
+                    <section class="menu-section">
+                        <h3>{{ category.display_name }}</h3>
+                        <div class="menu-items drinks">
+                            {% for item in menu_items %}
+                                {% if item.category_id == category.id %}
+                                    <div class="menu-item drink">
+                                        <div class="item-content">
+                                            <div class="item-header">
+                                                <h4>{{ item.name }}</h4>
+                                                <span class="price">{{ "%.2f"|format(item.price) }} €</span>
+                                            </div>
+                                            {% if item.description %}
+                                                <p class="description">{{ item.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </section>
                 {% endif %}
-                <div class="menu-item-content">
-                    <div class="menu-item-header">
-                        <h3>{{ item.name }}</h3>
-                        <span class="price">{{ "%.2f"|format(item.price) }}€</span>
-                    </div>
-                    <p class="description">{{ item.description }}</p>
-                    <div class="tags">
-                        {% if item.vegetarian %}
-                        <span class="tag vegetarian" title="Vegetarisch">🥕</span>
-                        {% endif %}
-                        {% if item.vegan %}
-                        <span class="tag vegan" title="Vegan">🌱</span>
-                        {% endif %}
-                        {% if item.spicy %}
-                        <span class="tag spicy" title="Scharf">🌶️</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
             {% endfor %}
         </div>
     </div>
-    {% endfor %}
+
+    <!-- Öffnungszeiten -->
+    <aside class="opening-hours">
+        <h2>Öffnungszeiten</h2>
+        <ul>
+            {% for hour in opening_hours %}
+                <li>
+                    <span class="day">{{ hour.day }}</span>
+                    {% if hour.closed %}
+                        <span class="time">Ruhetag</span>
+                    {% else %}
+                        <span class="time">{{ hour.open_time }} - {{ hour.close_time }} Uhr</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </aside>
 </div>
 
 <style>
-.menu-header {
-    position: relative;
-    height: 300px;
-    background-image: url('/static/images/header.jpg');
-    background-size: cover;
-    background-position: center;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    text-align: center;
+.menu-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
 }
 
-.menu-header-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+.menu-header {
+    text-align: center;
+    margin-bottom: 40px;
 }
 
 .menu-header h1 {
-    position: relative;
-    font-size: 3rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    z-index: 1;
+    color: #c17817;
+    font-size: 2.5em;
+    margin: 0;
 }
 
-.menu-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+.menu-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
 }
 
-.menu-category {
-    margin-bottom: 3rem;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
+.menu-section {
+    margin-bottom: 40px;
 }
 
-.menu-category h2 {
+.menu-section h2 {
     color: #333;
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #ddd;
+    font-size: 2em;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #c17817;
+}
+
+.menu-section h3 {
+    color: #c17817;
+    font-size: 1.5em;
+    margin-bottom: 20px;
 }
 
 .menu-items {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    gap: 30px;
 }
 
 .menu-item {
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s;
 }
 
 .menu-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.menu-item-image {
+.item-image {
     width: 100%;
     height: 200px;
     overflow: hidden;
 }
 
-.menu-item-image img {
+.item-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
 }
 
-.menu-item:hover .menu-item-image img {
-    transform: scale(1.1);
+.item-content {
+    padding: 20px;
 }
 
-.menu-item-content {
-    padding: 1.5rem;
-}
-
-.menu-item-header {
+.item-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
-.menu-item h3 {
-    color: #2c3e50;
+.item-header h3 {
+    color: #333;
+    font-size: 1.3em;
     margin: 0;
-    font-size: 1.25rem;
 }
 
 .price {
+    color: #c17817;
     font-weight: bold;
-    color: #e67e22;
-    font-size: 1.1rem;
+    font-size: 1.2em;
 }
 
 .description {
     color: #666;
-    margin: 0.5rem 0;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    margin: 10px 0;
+    line-height: 1.5;
 }
 
-.tags {
-    margin-top: 1rem;
+.item-tags {
     display: flex;
-    gap: 0.5rem;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .tag {
-    font-size: 1.2rem;
-    padding: 0.2rem;
-    border-radius: 4px;
-    cursor: help;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.vegetarian {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.vegan {
+    background-color: #8BC34A;
+    color: white;
+}
+
+.spicy {
+    background-color: #F44336;
+    color: white;
+}
+
+/* Getränke-Sektion */
+.drinks-section {
+    margin-top: 60px;
+}
+
+.menu-items.drinks {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.menu-item.drink {
+    background: transparent;
+    box-shadow: none;
+    border-bottom: 1px solid #eee;
+    border-radius: 0;
+    padding: 10px 0;
+}
+
+.menu-item.drink:hover {
+    transform: none;
+}
+
+.menu-item.drink .item-header h4 {
+    color: #333;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* Öffnungszeiten */
+.opening-hours {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 60px;
+}
+
+.opening-hours h2 {
+    color: #c17817;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.opening-hours ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.opening-hours li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.opening-hours li:last-child {
+    border-bottom: none;
+}
+
+.opening-hours .day {
+    font-weight: 500;
+    color: #333;
+}
+
+.opening-hours .time {
+    color: #666;
 }
 
 @media (max-width: 768px) {
-    .menu-header {
-        height: 200px;
+    .menu-page {
+        padding: 20px;
     }
-    
+
     .menu-header h1 {
-        font-size: 2rem;
+        font-size: 2em;
     }
-    
-    .menu-container {
-        padding: 1rem;
-    }
-    
+
     .menu-items {
         grid-template-columns: 1fr;
     }
-    
-    .menu-category {
-        padding: 1rem;
+
+    .menu-section h2 {
+        font-size: 1.6em;
     }
-    
-    .menu-item-image {
-        height: 180px;
+
+    .item-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .item-tags {
+        flex-wrap: wrap;
     }
 }
 </style>
