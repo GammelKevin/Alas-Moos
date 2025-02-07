@@ -3,64 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alas Moos - Griechisches Restaurant</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Restaurant ALAS - Griechische Spezialitäten in Moos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">Alas Moos</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#menu">Speisekarte</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#opening-hours">Öffnungszeiten</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contact">Kontakt</a>
-                    </li>
-                </ul>
-            </div>
+    <div class="loading-screen">
+        <div class="loader">
+            <div class="loader-inner"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-brand">ALAS</div>
+        <div class="nav-links">
+            <a href="/" class="active">Home</a>
+            <a href="/menu">Speisekarte</a>
+            <a href="#about">Über Uns</a>
+            <a href="#opening-hours">Öffnungszeiten</a>
+        </div>
+        <div class="menu-btn">
+            <div class="menu-btn__burger"></div>
         </div>
     </nav>
 
-    <header class="hero">
-        <div class="container text-center">
-            <h1>Willkommen bei Alas Moos</h1>
-            <p>Traditionelle griechische Küche in Moos</p>
-        </div>
-    </header>
+    {% extends "base.html" %}
 
-    <section id="opening-hours" class="py-5">
+    {% block content %}
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Alas</h1>
+            <p class="hero-subtitle">Griechische Spezialitäten in Moos</p>
+            <a href="#menu" class="cta-button">Speisekarte ansehen</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
         <div class="container">
-            <h2 class="text-center mb-4">Öffnungszeiten</h2>
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <table class="table">
-                                <tbody>
-                                    {% for hours in opening_hours %}
-                                    <tr>
-                                        <td>{{ hours.day }}</td>
-                                        <td>
-                                            {% if hours.closed %}
-                                                Ruhetag
-                                            {% else %}
-                                                {{ hours.open_time }} - {{ hours.close_time }} Uhr
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+            <div class="section-title">
+                <h2>Willkommen bei Alas</h2>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>Genießen Sie authentische griechische Küche in gemütlicher Atmosphäre. Unser Restaurant bietet Ihnen traditionelle Spezialitäten, zubereitet mit frischen Zutaten und viel Liebe zum Detail.</p>
+                    <p>Entdecken Sie die authentische griechische Küche in unserem familiär geführten Restaurant in Moos. Wir verwenden nur die besten Zutaten und traditionelle Rezepte, um Ihnen ein unvergessliches Geschmackserlebnis zu bieten.</p>
+                    <div class="about-features">
+                        <div class="feature">
+                            <i class="fas fa-utensils"></i>
+                            <h3>Authentische Küche</h3>
+                            <p>Traditionelle griechische Rezepte</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-wine-glass-alt"></i>
+                            <h3>Ausgewählte Weine</h3>
+                            <p>Griechische und internationale Weine</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-heart"></i>
+                            <h3>Familiäre Atmosphäre</h3>
+                            <p>Herzlicher Service</p>
                         </div>
                     </div>
                 </div>
@@ -68,71 +72,97 @@
         </div>
     </section>
 
-    <section id="menu" class="py-5">
+    <!-- Opening Hours Section -->
+    <section id="opening-hours" class="opening-hours">
+        <div class="opening-hours-container">
+            <div class="section-title">
+                <h2>Unsere Öffnungszeiten</h2>
+            </div>
+            <div class="hours-grid">
+                {% for hour in opening_hours %}
+                <div class="day-card">
+                    <h3 class="day-name">{{ hour.day }}</h3>
+                    {% if hour.closed %}
+                    <p class="closed">Ruhetag</p>
+                    {% else %}
+                    <p class="hours">
+                        {% if hour.open_time_1 and hour.close_time_1 %}
+                        {{ hour.open_time_1 }} - {{ hour.close_time_1 }}
+                        {% endif %}
+                        {% if hour.open_time_2 and hour.close_time_2 %}
+                        <br>
+                        {{ hour.open_time_2 }} - {{ hour.close_time_2 }}
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
         <div class="container">
-            <h2 class="text-center mb-4">Unsere Speisekarte</h2>
+            <div class="section-title">
+                <h2>Kontakt & Anfahrt</h2>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Adresse</h3>
+                        <p>Musterstraße 123<br>12345 Moos</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <h3>Telefon</h3>
+                        <p>+49 123 456789</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <h3>E-Mail</h3>
+                        <p>info@alas-restaurant.de</p>
+                    </div>
+                </div>
+                <div class="map">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2640.4828427034784!2d8.123456789!3d48.123456789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDjCsDA3JzM0LjQiTiA4wrAwNyczNC40IkU!5e0!3m2!1sde!2sde!4v1234567890" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Kontakt</h3>
+                <p>Telefon: <a href="tel:+498441497797">08441 497797</a></p>
+                <p>Email: <a href="mailto:info@alas-moos.de">info@alas-moos.de</a></p>
+            </div>
             
-            {% for category in categories %}
-            <div class="menu-category mb-4">
-                <h3 class="mb-3">{{ category.display_name }}</h3>
-                <div class="row">
-                    {% for item in menu_items if item.category_id == category.id %}
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100">
-                            {% if item.image_path %}
-                            <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" 
-                                 class="card-img-top menu-item-image" alt="{{ item.name }}">
-                            {% endif %}
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h5 class="card-title">
-                                        {{ item.name }}
-                                        {% if item.vegetarian %}<span title="Vegetarisch">🥕</span>{% endif %}
-                                        {% if item.vegan %}<span title="Vegan">🌱</span>{% endif %}
-                                        {% if item.spicy %}<span title="Scharf">🌶️</span>{% endif %}
-                                    </h5>
-                                    <span class="price">{{ "%.2f"|format(item.price) }}€</span>
-                                </div>
-                                {% if item.description %}
-                                <p class="card-text">{{ item.description }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+            <div class="footer-section">
+                <h3>Adresse</h3>
+                <p>Alas</p>
+                <p>Münchener Str. 127</p>
+                <p>85051 Ingolstadt</p>
             </div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <section id="contact" class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-4">Kontakt & Anfahrt</h2>
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Alas Moos</h5>
-                            <p class="card-text">
-                                <i class="fas fa-map-marker-alt"></i> Hauptstraße 123<br>
-                                85665 Moos<br><br>
-                                <i class="fas fa-phone"></i> Telefon: 0123 456789<br>
-                                <i class="fas fa-envelope"></i> E-Mail: info@alas-moos.de
-                            </p>
-                        </div>
-                    </div>
+            
+            <div class="footer-section">
+                <h3>Folgen Sie uns</h3>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/profile.php?id=100063556361475" target="_blank" class="social-link">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
                 </div>
             </div>
         </div>
-    </section>
-
-    <footer class="py-4 bg-dark text-white">
-        <div class="container text-center">
-            <p>&copy; 2024 Alas Moos. Alle Rechte vorbehalten.</p>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Alas. Alle Rechte vorbehalten.</p>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
