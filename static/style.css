@@ -901,6 +901,75 @@ footer {
     }
 }
 
+/* Intro Overlay */
+.intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a0a;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+    transform-origin: center;
+}
+
+.intro-circle {
+    width: 150px;
+    height: 150px;
+    background-color: #0a0a0a;
+    border: 2px solid #e19b4c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: pulseAndFade 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.intro-text {
+    color: #e19b4c;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    opacity: 0;
+    animation: fadeInText 0.5s ease forwards 0.5s;
+}
+
+@keyframes pulseAndFade {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInText {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.intro-overlay.hidden {
+    transform: scale(2);
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Animations */
 @keyframes fadeOut {
     to {

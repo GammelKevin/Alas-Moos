@@ -285,35 +285,29 @@ body {
     transition: color 0.3s ease;
 }
 
-.quick-nav-btn span {
-    position: relative;
-    z-index: 1;
+.quick-nav-btn:hover {
+    color: #e19b4c;
 }
 
-.quick-nav-btn::before {
+.quick-nav-btn::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 50%;
+    background-color: #e19b4c;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.quick-nav-btn:hover::after,
+.quick-nav-btn.active::after {
     width: 100%;
-    height: 100%;
-    background: #e19b4c;
-    border-radius: 4px;
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s ease;
-    z-index: 0;
 }
 
-.quick-nav-btn:hover::before,
-.quick-nav-btn.active::before {
-    transform: scaleX(1);
-    transform-origin: left;
-}
-
-.quick-nav-btn:hover,
 .quick-nav-btn.active {
-    color: #0a0a0a;
+    color: #e19b4c;
 }
 
 /* Menu Content */
