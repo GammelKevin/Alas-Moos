@@ -346,18 +346,29 @@ def delete_menu_category(id):
 @app.route('/admin/opening-hours', methods=['GET'])
 @login_required
 def admin_opening_hours():
-    opening_hours = OpeningHours.query.order_by(
-        case(
-            (OpeningHours.day == 'Montag', 1),
-            (OpeningHours.day == 'Dienstag', 2),
-            (OpeningHours.day == 'Mittwoch', 3),
-            (OpeningHours.day == 'Donnerstag', 4),
-            (OpeningHours.day == 'Freitag', 5),
-            (OpeningHours.day == 'Samstag', 6),
-            (OpeningHours.day == 'Sonntag', 7)
-        )
-    ).all()
-    return render_template('admin/opening_hours.html', opening_hours=opening_hours)
+    try:
+        # Hole Öffnungszeiten ohne Sortierung
+        opening_hours = OpeningHours.query.all()
+        
+        # Definiere die Reihenfolge der Tage
+        day_order = {
+            'Montag': 1,
+            'Dienstag': 2,
+            'Mittwoch': 3,
+            'Donnerstag': 4,
+            'Freitag': 5,
+            'Samstag': 6,
+            'Sonntag': 7
+        }
+        
+        # Sortiere die Öffnungszeiten manuell
+        opening_hours = sorted(opening_hours, key=lambda x: day_order.get(x.day, 8))
+        
+        return render_template('admin/opening_hours.html', opening_hours=opening_hours)
+    except Exception as e:
+        app.logger.error(f"Fehler in admin_opening_hours: {str(e)}")
+        flash('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', 'error')
+        return redirect(url_for('admin'))
 
 @app.route('/admin/opening-hours/save', methods=['POST'])
 @login_required
