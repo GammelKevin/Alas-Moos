@@ -3,11 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
+from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-limit
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Stelle sicher, dass der Upload-Ordner existiert
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 db = SQLAlchemy(app)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Login Manager Setup
 login_manager = LoginManager()
@@ -47,7 +59,13 @@ class MenuItem(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('menu_category.id'), nullable=False)
     order = db.Column(db.Integer)
     active = db.Column(db.Boolean, default=True)
-    is_drink = db.Column(db.Boolean, default=False)
+    image_path = db.Column(db.String(100))
+    is_lunch_special = db.Column(db.Boolean, default=False)
+    allergens = db.Column(db.String(100))
+    portion_size = db.Column(db.String(20))
+    spiciness_level = db.Column(db.Integer, default=0)
+    is_vegetarian = db.Column(db.Boolean, default=False)
+    is_vegan = db.Column(db.Boolean, default=False)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -171,30 +189,6 @@ def admin_menu_items():
     categories = MenuCategory.query.order_by(MenuCategory.order).all()
     return render_template('admin/menu_items.html', items=items, categories=categories)
 
-@app.route('/admin/menu-items/edit/<int:item_id>', methods=['GET', 'POST'])
-@login_required
-def edit_menu_item(item_id):
-    item = MenuItem.query.get_or_404(item_id)
-    categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    
-    if request.method == 'POST':
-        try:
-            item.name = request.form.get('name')
-            item.description = request.form.get('description')
-            item.price = float(request.form.get('price'))
-            item.category_id = int(request.form.get('category_id'))
-            item.order = int(request.form.get('order'))
-            item.active = bool(request.form.get('active'))
-            
-            db.session.commit()
-            flash('Gericht wurde erfolgreich aktualisiert', 'success')
-            return redirect(url_for('admin_menu_items'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Fehler beim Aktualisieren des Gerichts: {str(e)}', 'error')
-    
-    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
-
 @app.route('/admin/menu-items/add', methods=['GET', 'POST'])
 @login_required
 def add_menu_item():
@@ -202,13 +196,29 @@ def add_menu_item():
     
     if request.method == 'POST':
         try:
+            # Bildupload
+            image_path = None
+            if 'image' in request.files:
+                file = request.files['image']
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    image_path = f'uploads/{filename}'
+
             new_item = MenuItem(
                 name=request.form.get('name'),
                 description=request.form.get('description'),
                 price=float(request.form.get('price')),
                 category_id=int(request.form.get('category_id')),
                 order=int(request.form.get('order')),
-                active=bool(request.form.get('active'))
+                active=bool(request.form.get('active')),
+                image_path=image_path,
+                is_lunch_special=bool(request.form.get('is_lunch_special')),
+                allergens=request.form.get('allergens'),
+                portion_size=request.form.get('portion_size'),
+                spiciness_level=int(request.form.get('spiciness_level', 0)),
+                is_vegetarian=bool(request.form.get('is_vegetarian')),
+                is_vegan=bool(request.form.get('is_vegan'))
             )
             
             db.session.add(new_item)
@@ -220,6 +230,50 @@ def add_menu_item():
             flash(f'Fehler beim Hinzufügen des Gerichts: {str(e)}', 'error')
     
     return render_template('admin/add_menu_item.html', categories=categories)
+
+@app.route('/admin/menu-items/edit/<int:item_id>', methods=['GET', 'POST'])
+@login_required
+def edit_menu_item(item_id):
+    item = MenuItem.query.get_or_404(item_id)
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    
+    if request.method == 'POST':
+        try:
+            # Bildupload
+            if 'image' in request.files:
+                file = request.files['image']
+                if file and allowed_file(file.filename):
+                    # Lösche altes Bild, falls vorhanden
+                    if item.image_path:
+                        old_image_path = os.path.join(app.config['UPLOAD_FOLDER'], item.image_path.split('/')[-1])
+                        if os.path.exists(old_image_path):
+                            os.remove(old_image_path)
+                    
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    item.image_path = f'uploads/{filename}'
+
+            item.name = request.form.get('name')
+            item.description = request.form.get('description')
+            item.price = float(request.form.get('price'))
+            item.category_id = int(request.form.get('category_id'))
+            item.order = int(request.form.get('order'))
+            item.active = bool(request.form.get('active'))
+            item.is_lunch_special = bool(request.form.get('is_lunch_special'))
+            item.allergens = request.form.get('allergens')
+            item.portion_size = request.form.get('portion_size')
+            item.spiciness_level = int(request.form.get('spiciness_level', 0))
+            item.is_vegetarian = bool(request.form.get('is_vegetarian'))
+            item.is_vegan = bool(request.form.get('is_vegan'))
+            
+            db.session.commit()
+            flash('Gericht wurde erfolgreich aktualisiert', 'success')
+            return redirect(url_for('admin_menu_items'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Aktualisieren des Gerichts: {str(e)}', 'error')
+    
+    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
 
 @app.route('/admin/menu-categories/add', methods=['POST'])
 @login_required

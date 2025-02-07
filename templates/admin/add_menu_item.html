@@ -2,95 +2,87 @@
 
 {% block content %}
 <div class="admin-section">
-    <h2>Gericht bearbeiten</h2>
+    <h2>Neues Gericht hinzufügen</h2>
     <form method="POST" enctype="multipart/form-data" class="admin-form">
         <div class="form-group">
             <label for="name">Name *</label>
-            <input type="text" id="name" name="name" value="{{ item.name }}" required>
+            <input type="text" id="name" name="name" required>
         </div>
         
         <div class="form-group">
             <label for="description">Beschreibung</label>
-            <textarea id="description" name="description" rows="3">{{ item.description }}</textarea>
+            <textarea id="description" name="description" rows="3"></textarea>
         </div>
         
         <div class="form-group">
             <label for="price">Preis (€) *</label>
-            <input type="number" id="price" name="price" step="0.10" value="{{ item.price }}" required>
+            <input type="number" id="price" name="price" step="0.10" required>
         </div>
         
         <div class="form-group">
             <label for="category_id">Kategorie *</label>
             <select id="category_id" name="category_id" required>
                 {% for category in categories %}
-                <option value="{{ category.id }}" {% if category.id == item.category_id %}selected{% endif %}>
-                    {{ category.display_name }}
-                </option>
+                <option value="{{ category.id }}">{{ category.display_name }}</option>
                 {% endfor %}
             </select>
         </div>
         
         <div class="form-group">
             <label for="image">Bild</label>
-            {% if item.image_path %}
-            <div class="current-image">
-                <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}" style="max-width: 200px;">
-                <p>Aktuelles Bild</p>
-            </div>
-            {% endif %}
             <input type="file" id="image" name="image" accept="image/*">
             <small>Erlaubte Formate: JPG, PNG, GIF, WEBP</small>
         </div>
 
         <div class="form-group">
             <label for="portion_size">Portionsgröße</label>
-            <input type="text" id="portion_size" name="portion_size" value="{{ item.portion_size }}">
+            <input type="text" id="portion_size" name="portion_size">
         </div>
 
         <div class="form-group">
             <label for="allergens">Allergene</label>
-            <input type="text" id="allergens" name="allergens" value="{{ item.allergens }}" placeholder="z.B. Gluten, Milch, Nüsse">
+            <input type="text" id="allergens" name="allergens" placeholder="z.B. Gluten, Milch, Nüsse">
         </div>
 
         <div class="form-group">
             <label for="spiciness_level">Schärfegrad</label>
             <select id="spiciness_level" name="spiciness_level">
-                <option value="0" {% if item.spiciness_level == 0 %}selected{% endif %}>Nicht scharf</option>
-                <option value="1" {% if item.spiciness_level == 1 %}selected{% endif %}>Leicht scharf</option>
-                <option value="2" {% if item.spiciness_level == 2 %}selected{% endif %}>Mittel scharf</option>
-                <option value="3" {% if item.spiciness_level == 3 %}selected{% endif %}>Sehr scharf</option>
+                <option value="0">Nicht scharf</option>
+                <option value="1">Leicht scharf</option>
+                <option value="2">Mittel scharf</option>
+                <option value="3">Sehr scharf</option>
             </select>
         </div>
 
         <div class="form-group">
             <label for="order">Reihenfolge</label>
-            <input type="number" id="order" name="order" value="{{ item.order }}">
+            <input type="number" id="order" name="order" value="0">
         </div>
         
         <div class="form-group checkbox-group">
             <label>
-                <input type="checkbox" name="is_lunch_special" {% if item.is_lunch_special %}checked{% endif %}>
+                <input type="checkbox" name="is_lunch_special">
                 Mittagsangebot
             </label>
         </div>
 
         <div class="form-group checkbox-group">
             <label>
-                <input type="checkbox" name="is_vegetarian" {% if item.is_vegetarian %}checked{% endif %}>
+                <input type="checkbox" name="is_vegetarian">
                 Vegetarisch
             </label>
         </div>
 
         <div class="form-group checkbox-group">
             <label>
-                <input type="checkbox" name="is_vegan" {% if item.is_vegan %}checked{% endif %}>
+                <input type="checkbox" name="is_vegan">
                 Vegan
             </label>
         </div>
 
         <div class="form-group checkbox-group">
             <label>
-                <input type="checkbox" name="active" {% if item.active %}checked{% endif %}>
+                <input type="checkbox" name="active" checked>
                 Aktiv
             </label>
         </div>
@@ -111,20 +103,6 @@
 
 .checkbox-group input[type="checkbox"] {
     width: auto;
-}
-
-.current-image {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    text-align: center;
-}
-
-.current-image img {
-    max-width: 200px;
-    height: auto;
-    border-radius: 4px;
 }
 
 .form-actions {
