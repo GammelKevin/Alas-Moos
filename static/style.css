@@ -810,32 +810,38 @@ footer {
 }
 
 .opening-hours {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 600px;
+    text-align: center;
+}
+
+.opening-hours h2 {
+    color: #e19b4c;
     margin-bottom: 1.5rem;
+    font-family: 'Playfair Display', serif;
 }
 
-.opening-hours dt {
-    font-weight: 500;
-    color: var(--gold);
+.opening-hours ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.contact-details {
-    margin-top: 2rem;
+.opening-hours li {
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.contact-details a {
-    color: var(--gray);
-    text-decoration: none;
-    transition: color 0.3s ease;
+.opening-hours li:last-child {
+    border-bottom: none;
 }
 
-.contact-details a:hover {
-    color: var(--gold);
-}
-
-/* Öffnungszeiten Section */
 .opening-hours-section {
     padding: 60px 0;
     background-color: #f9f9f9;
