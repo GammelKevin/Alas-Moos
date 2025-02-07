@@ -9,28 +9,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    {% extends "base.html" %}
+
+    {% block content %}
     <div class="loading-screen">
         <div class="loader">
             <div class="loader-inner"></div>
         </div>
     </div>
 
-    <nav class="navbar">
-        <div class="nav-brand">ALAS</div>
-        <div class="nav-links">
-            <a href="/" class="active">Home</a>
-            <a href="/menu">Speisekarte</a>
-            <a href="#about">Über Uns</a>
-            <a href="#opening-hours">Öffnungszeiten</a>
-        </div>
-        <div class="menu-btn">
-            <div class="menu-btn__burger"></div>
-        </div>
-    </nav>
-
-    {% extends "base.html" %}
-
-    {% block content %}
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
