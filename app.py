@@ -347,40 +347,32 @@ def delete_menu_category(id):
 @login_required
 def admin_opening_hours():
     try:
-        app.logger.info("Versuche Öffnungszeiten abzurufen...")
+        # Hole alle Öffnungszeiten
+        opening_hours = OpeningHours.query.all()
         
-        # Erstelle Öffnungszeiten falls keine existieren
-        if OpeningHours.query.count() == 0:
-            app.logger.info("Keine Öffnungszeiten gefunden, erstelle Standardzeiten...")
+        # Wenn keine Öffnungszeiten existieren, erstelle Standardzeiten
+        if not opening_hours:
             default_hours = [
-                {'day': 'Montag', 'closed': True},
-                {'day': 'Dienstag', 'open_time': '11:30', 'close_time': '14:30'},
-                {'day': 'Mittwoch', 'open_time': '11:30', 'close_time': '14:30'},
-                {'day': 'Donnerstag', 'open_time': '11:30', 'close_time': '14:30'},
-                {'day': 'Freitag', 'open_time': '11:30', 'close_time': '14:30'},
-                {'day': 'Samstag', 'open_time': '17:00', 'close_time': '22:00'},
-                {'day': 'Sonntag', 'open_time': '11:30', 'close_time': '14:30'}
+                OpeningHours(day='Montag', closed=True),
+                OpeningHours(day='Dienstag', open_time='11:30', close_time='14:30'),
+                OpeningHours(day='Mittwoch', open_time='11:30', close_time='14:30'),
+                OpeningHours(day='Donnerstag', open_time='11:30', close_time='14:30'),
+                OpeningHours(day='Freitag', open_time='11:30', close_time='14:30'),
+                OpeningHours(day='Samstag', open_time='17:00', close_time='22:00'),
+                OpeningHours(day='Sonntag', open_time='11:30', close_time='14:30')
             ]
             
             for hours in default_hours:
-                opening_hours = OpeningHours(
-                    day=hours['day'],
-                    open_time=hours.get('open_time'),
-                    close_time=hours.get('close_time'),
-                    closed=hours.get('closed', False)
-                )
-                db.session.add(opening_hours)
+                db.session.add(hours)
             db.session.commit()
-            app.logger.info("Standardzeiten erstellt.")
+            
+            # Hole die neu erstellten Öffnungszeiten
+            opening_hours = OpeningHours.query.all()
         
-        # Hole alle Öffnungszeiten
-        opening_hours = OpeningHours.query.all()
-        app.logger.info(f"Gefundene Öffnungszeiten: {len(opening_hours)}")
-        
-        # Sortiere die Öffnungszeiten
+        # Sortiere die Öffnungszeiten nach Wochentag
         day_order = {
-            'Montag': 1, 'Dienstag': 2, 'Mittwoch': 3, 'Donnerstag': 4,
-            'Freitag': 5, 'Samstag': 6, 'Sonntag': 7
+            'Montag': 1, 'Dienstag': 2, 'Mittwoch': 3,
+            'Donnerstag': 4, 'Freitag': 5, 'Samstag': 6, 'Sonntag': 7
         }
         opening_hours = sorted(opening_hours, key=lambda x: day_order.get(x.day, 8))
         
@@ -394,29 +386,22 @@ def admin_opening_hours():
 
 @app.route('/admin/opening-hours/save', methods=['POST'])
 @login_required
-def save_opening_hours():
+def admin_opening_hours_save():
     try:
-        days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+        days = ['montag', 'dienstag', 'mittwoch', 'donnerstag', 'freitag', 'samstag', 'sonntag']
         
         for day in days:
-            hours = OpeningHours.query.filter_by(day=day).first()
+            hours = OpeningHours.query.filter_by(day=day.capitalize()).first()
             if not hours:
-                hours = OpeningHours(day=day)
+                hours = OpeningHours(day=day.capitalize())
                 db.session.add(hours)
             
-            day_key = day.lower()
-            hours.closed = request.form.get(f'{day_key}_closed') is not None
+            closed = request.form.get(f'{day}_closed') == 'on'
+            hours.closed = closed
             
-            if not hours.closed:
-                open_time = request.form.get(f'{day_key}_open')
-                close_time = request.form.get(f'{day_key}_close')
-                
-                if not open_time or not close_time:
-                    flash(f'Bitte geben Sie gültige Öffnungszeiten für {day} ein.', 'error')
-                    return redirect(url_for('admin_opening_hours'))
-                
-                hours.open_time = open_time
-                hours.close_time = close_time
+            if not closed:
+                hours.open_time = request.form.get(f'{day}_open')
+                hours.close_time = request.form.get(f'{day}_close')
             else:
                 hours.open_time = None
                 hours.close_time = None
@@ -425,8 +410,9 @@ def save_opening_hours():
         flash('Öffnungszeiten wurden erfolgreich gespeichert.', 'success')
         
     except Exception as e:
+        app.logger.error(f"Fehler beim Speichern der Öffnungszeiten: {str(e)}")
         db.session.rollback()
-        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}', 'error')
+        flash('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', 'error')
     
     return redirect(url_for('admin_opening_hours'))
 
