@@ -347,26 +347,48 @@ def delete_menu_category(id):
 @login_required
 def admin_opening_hours():
     try:
-        # Hole Öffnungszeiten ohne Sortierung
+        app.logger.info("Versuche Öffnungszeiten abzurufen...")
+        
+        # Erstelle Öffnungszeiten falls keine existieren
+        if OpeningHours.query.count() == 0:
+            app.logger.info("Keine Öffnungszeiten gefunden, erstelle Standardzeiten...")
+            default_hours = [
+                {'day': 'Montag', 'closed': True},
+                {'day': 'Dienstag', 'open_time': '11:30', 'close_time': '14:30'},
+                {'day': 'Mittwoch', 'open_time': '11:30', 'close_time': '14:30'},
+                {'day': 'Donnerstag', 'open_time': '11:30', 'close_time': '14:30'},
+                {'day': 'Freitag', 'open_time': '11:30', 'close_time': '14:30'},
+                {'day': 'Samstag', 'open_time': '17:00', 'close_time': '22:00'},
+                {'day': 'Sonntag', 'open_time': '11:30', 'close_time': '14:30'}
+            ]
+            
+            for hours in default_hours:
+                opening_hours = OpeningHours(
+                    day=hours['day'],
+                    open_time=hours.get('open_time'),
+                    close_time=hours.get('close_time'),
+                    closed=hours.get('closed', False)
+                )
+                db.session.add(opening_hours)
+            db.session.commit()
+            app.logger.info("Standardzeiten erstellt.")
+        
+        # Hole alle Öffnungszeiten
         opening_hours = OpeningHours.query.all()
+        app.logger.info(f"Gefundene Öffnungszeiten: {len(opening_hours)}")
         
-        # Definiere die Reihenfolge der Tage
+        # Sortiere die Öffnungszeiten
         day_order = {
-            'Montag': 1,
-            'Dienstag': 2,
-            'Mittwoch': 3,
-            'Donnerstag': 4,
-            'Freitag': 5,
-            'Samstag': 6,
-            'Sonntag': 7
+            'Montag': 1, 'Dienstag': 2, 'Mittwoch': 3, 'Donnerstag': 4,
+            'Freitag': 5, 'Samstag': 6, 'Sonntag': 7
         }
-        
-        # Sortiere die Öffnungszeiten manuell
         opening_hours = sorted(opening_hours, key=lambda x: day_order.get(x.day, 8))
         
         return render_template('admin/opening_hours.html', opening_hours=opening_hours)
+        
     except Exception as e:
         app.logger.error(f"Fehler in admin_opening_hours: {str(e)}")
+        app.logger.exception("Detaillierter Fehler:")
         flash('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', 'error')
         return redirect(url_for('admin'))
 

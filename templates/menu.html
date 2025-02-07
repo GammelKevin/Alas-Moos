@@ -2,233 +2,148 @@
 
 {% block content %}
 <div class="menu-header">
-    <div class="header-image">
-        <div class="overlay"></div>
-        <h1>Unsere Speisekarte</h1>
-    </div>
+    <div class="menu-header-overlay"></div>
+    <h1>Unsere Speisekarte</h1>
 </div>
 
 <div class="menu-container">
     {% for category in categories %}
-    {% if category.items|length > 0 and category.active %}
-    <section class="menu-section">
-        <h2>{{ category.display_name }}</h2>
-        <div class="menu-grid">
+    <div class="menu-category">
+        <h2>{{ category.name }}</h2>
+        <div class="menu-items">
             {% for item in category.items %}
-            {% if item.active %}
             <div class="menu-item">
-                {% if item.image_path %}
-                <div class="menu-item-image">
-                    <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}">
+                <div class="menu-item-header">
+                    <h3>{{ item.name }}</h3>
+                    <span class="price">{{ "%.2f"|format(item.price) }}€</span>
                 </div>
-                {% endif %}
-                <div class="menu-item-content">
-                    <div class="menu-item-header">
-                        <h3>{{ item.name }}</h3>
-                        <span class="price">{{ "%.2f"|format(item.price) }}€</span>
-                    </div>
-                    {% if item.description %}
-                    <p class="description">{{ item.description }}</p>
+                <p class="description">{{ item.description }}</p>
+                <div class="tags">
+                    {% if item.vegetarian %}
+                    <span class="tag vegetarian" title="Vegetarisch">🥕</span>
                     {% endif %}
-                    <div class="menu-item-tags">
-                        {% if item.is_vegetarian %}
-                        <span class="tag vegetarian" title="Vegetarisch">
-                            <i class="fas fa-leaf"></i>
-                        </span>
-                        {% endif %}
-                        {% if item.is_vegan %}
-                        <span class="tag vegan" title="Vegan">
-                            <i class="fas fa-seedling"></i>
-                        </span>
-                        {% endif %}
-                        {% if item.spiciness_level > 0 %}
-                        <span class="tag spicy" title="Schärfegrad">
-                            {% for i in range(item.spiciness_level) %}
-                            <i class="fas fa-pepper-hot"></i>
-                            {% endfor %}
-                        </span>
-                        {% endif %}
-                        {% if item.allergens %}
-                        <span class="tag allergens" title="Allergene: {{ item.allergens }}">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </span>
-                        {% endif %}
-                    </div>
+                    {% if item.vegan %}
+                    <span class="tag vegan" title="Vegan">🌱</span>
+                    {% endif %}
+                    {% if item.spicy %}
+                    <span class="tag spicy" title="Scharf">🌶️</span>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
             {% endfor %}
         </div>
-    </section>
-    {% endif %}
+    </div>
     {% endfor %}
 </div>
-{% endblock %}
 
-{% block styles %}
 <style>
 .menu-header {
     position: relative;
     height: 300px;
-    margin-bottom: 3rem;
-}
-
-.header-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('/static/images/header.jpg') center/cover no-repeat;
+    background-image: url('/static/images/header.jpg');
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
+    text-align: center;
 }
 
-.overlay {
+.menu-header-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 0;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .menu-header h1 {
-    color: var(--light);
+    position: relative;
     font-size: 3rem;
-    text-align: center;
-    z-index: 1;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 1;
 }
 
 .menu-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 2rem;
 }
 
-.menu-section {
-    margin-bottom: 4rem;
+.menu-category {
+    margin-bottom: 3rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
 }
 
-.menu-section h2 {
-    color: var(--gold);
+.menu-category h2 {
+    color: #333;
     font-size: 2rem;
-    margin-bottom: 2rem;
-    text-align: center;
-    position: relative;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #ddd;
 }
 
-.menu-section h2::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 2px;
-    background: var(--gold);
-    margin: 1rem auto;
-}
-
-.menu-grid {
+.menu-items {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
 }
 
 .menu-item {
-    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
     border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s;
+    background: #f8f9fa;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .menu-item:hover {
     transform: translateY(-5px);
-}
-
-.menu-item-image {
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-}
-
-.menu-item-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s;
-}
-
-.menu-item:hover .menu-item-image img {
-    transform: scale(1.1);
-}
-
-.menu-item-content {
-    padding: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .menu-item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
-.menu-item-header h3 {
-    color: var(--light);
-    font-size: 1.25rem;
+.menu-item h3 {
+    color: #2c3e50;
     margin: 0;
+    font-size: 1.25rem;
 }
 
 .price {
-    color: var(--gold);
-    font-size: 1.25rem;
     font-weight: bold;
+    color: #e67e22;
+    font-size: 1.1rem;
 }
 
 .description {
-    color: var(--light);
-    opacity: 0.8;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: #666;
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
 
-.menu-item-tags {
+.tags {
+    margin-top: 1rem;
     display: flex;
     gap: 0.5rem;
-    flex-wrap: wrap;
 }
 
 .tag {
-    padding: 0.25rem 0.5rem;
+    font-size: 1.2rem;
+    padding: 0.2rem;
     border-radius: 4px;
-    font-size: 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--light);
-}
-
-.tag.vegetarian {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4CAF50;
-}
-
-.tag.vegan {
-    background: rgba(139, 195, 74, 0.2);
-    color: #8BC34A;
-}
-
-.tag.spicy {
-    background: rgba(244, 67, 54, 0.2);
-    color: #F44336;
-}
-
-.tag.allergens {
-    background: rgba(255, 193, 7, 0.2);
-    color: #FFC107;
+    cursor: help;
 }
 
 @media (max-width: 768px) {
@@ -240,8 +155,16 @@
         font-size: 2rem;
     }
     
-    .menu-grid {
+    .menu-container {
+        padding: 1rem;
+    }
+    
+    .menu-items {
         grid-template-columns: 1fr;
+    }
+    
+    .menu-category {
+        padding: 1rem;
     }
 }
 </style>
