@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import case
 import os
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
@@ -53,8 +54,10 @@ class MenuItem(db.Model):
 class OpeningHours(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(20), nullable=False)
-    open_time = db.Column(db.String(5))
-    close_time = db.Column(db.String(5))
+    open_time_1 = db.Column(db.String(5))
+    close_time_1 = db.Column(db.String(5))
+    open_time_2 = db.Column(db.String(5))
+    close_time_2 = db.Column(db.String(5))
     closed = db.Column(db.Boolean, default=False)
 
 @login_manager.user_loader
@@ -83,12 +86,12 @@ def init_db():
         # Add default opening hours
         opening_hours = [
             OpeningHours(day='Montag', closed=True),
-            OpeningHours(day='Dienstag', open_time='11:30', close_time='14:30'),
-            OpeningHours(day='Mittwoch', open_time='11:30', close_time='14:30'),
-            OpeningHours(day='Donnerstag', open_time='11:30', close_time='14:30'),
-            OpeningHours(day='Freitag', open_time='11:30', close_time='14:30'),
-            OpeningHours(day='Samstag', open_time='17:00', close_time='22:00'),
-            OpeningHours(day='Sonntag', open_time='11:30', close_time='14:30')
+            OpeningHours(day='Dienstag', open_time_1='11:30', close_time_1='14:30'),
+            OpeningHours(day='Mittwoch', open_time_1='11:30', close_time_1='14:30'),
+            OpeningHours(day='Donnerstag', open_time_1='11:30', close_time_1='14:30'),
+            OpeningHours(day='Freitag', open_time_1='11:30', close_time_1='14:30'),
+            OpeningHours(day='Samstag', open_time_1='17:00', close_time_1='22:00'),
+            OpeningHours(day='Sonntag', open_time_1='11:30', close_time_1='14:30')
         ]
         db.session.add_all(opening_hours)
         
@@ -312,8 +315,10 @@ def admin_save_hours():
             hours.closed = closed
             
             if not closed:
-                hours.open_time = request.form.get(f'{day}_open')
-                hours.close_time = request.form.get(f'{day}_close')
+                hours.open_time_1 = request.form.get(f'{day}_open_1')
+                hours.close_time_1 = request.form.get(f'{day}_close_1')
+                hours.open_time_2 = request.form.get(f'{day}_open_2')
+                hours.close_time_2 = request.form.get(f'{day}_close_2')
         
         db.session.commit()
         flash('Öffnungszeiten erfolgreich gespeichert', 'success')
