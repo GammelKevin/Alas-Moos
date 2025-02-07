@@ -217,7 +217,7 @@
             <a href="#about">Über Uns</a>
             <a href="#opening-hours">Öffnungszeiten</a>
             {% if current_user.is_authenticated %}
-            <a href="{{ url_for('admin.index') }}">Admin</a>
+            <a href="{{ url_for('admin') }}">Admin</a>
             {% endif %}
         </div>
         <div class="menu-btn">
