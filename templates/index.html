@@ -37,6 +37,14 @@
             <p>Griechische Spezialitäten in Moos</p>
             <a href="#kontakt" class="cta-button">Tisch reservieren</a>
         </div>
+        <div class="opening-hours">
+            <h2>Öffnungszeiten</h2>
+            <ul>
+                {% for hour in opening_hours %}
+                <li>{{ hour }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     </section>
 
     <section id="about" class="about-section">

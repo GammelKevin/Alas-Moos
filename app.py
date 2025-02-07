@@ -97,12 +97,29 @@ def home():
     food_items = MenuItem.query.filter_by(active=True, is_drink=False).order_by(MenuItem.order).all()
     drink_items = MenuItem.query.filter_by(active=True, is_drink=True).order_by(MenuItem.order).all()
     categories = MenuCategory.query.filter_by(active=True).order_by(MenuCategory.order).all()
-    opening_hours = OpeningHours.query.order_by(OpeningHours.id).all()
+    opening_hours = OpeningHours.query.all()
+    formatted_hours = []
+    
+    for hour in opening_hours:
+        if hour.closed:
+            formatted_hours.append(f"{hour.day}: Geschlossen")
+        else:
+            times = []
+            if hour.open_time_1 and hour.close_time_1:
+                times.append(f"{hour.open_time_1}-{hour.close_time_1}")
+            if hour.open_time_2 and hour.close_time_2:
+                times.append(f"{hour.open_time_2}-{hour.close_time_2}")
+            
+            if times:
+                formatted_hours.append(f"{hour.day}: {' & '.join(times)}")
+            else:
+                formatted_hours.append(f"{hour.day}: Keine Zeiten angegeben")
+
     return render_template('index.html',
                          food_items=food_items,
                          drink_items=drink_items,
                          categories=categories,
-                         opening_hours=opening_hours)
+                         opening_hours=formatted_hours)
 
 @app.route('/menu')
 def menu():

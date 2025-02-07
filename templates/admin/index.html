@@ -17,11 +17,13 @@
                     <div class="day-name">{{ hour.day }}</div>
                     <div class="hours-inputs">
                         <div class="time-slot">
+                            <label>Mittag:</label>
                             <input type="time" name="open_time_1_{{ hour.id }}" value="{{ hour.open_time_1 }}" {% if hour.closed %}disabled{% endif %}>
                             <span>bis</span>
                             <input type="time" name="close_time_1_{{ hour.id }}" value="{{ hour.close_time_1 }}" {% if hour.closed %}disabled{% endif %}>
                         </div>
                         <div class="time-slot">
+                            <label>Abend:</label>
                             <input type="time" name="open_time_2_{{ hour.id }}" value="{{ hour.open_time_2 }}" {% if hour.closed %}disabled{% endif %}>
                             <span>bis</span>
                             <input type="time" name="close_time_2_{{ hour.id }}" value="{{ hour.close_time_2 }}" {% if hour.closed %}disabled{% endif %}>
@@ -148,6 +150,11 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: #fff;
+}
+
+.time-slot label {
+    min-width: 60px;
 }
 
 .time-slot input[type="time"] {
