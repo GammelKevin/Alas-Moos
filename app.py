@@ -247,27 +247,23 @@ def admin_categories():
 @login_required
 def admin_add_category():
     try:
+        name = request.form.get('name').lower()
         display_name = request.form.get('display_name')
-        is_drink = bool(request.form.get('is_drink_category'))
-        
-        # Generiere einen URL-freundlichen Namen
-        name = display_name.lower().replace(' ', '-')
-        
-        # Bestimme die höchste vorhandene Reihenfolge
-        max_order = db.session.query(db.func.max(MenuCategory.order)).scalar() or 0
+        order = int(request.form.get('order'))
+        is_drink_category = bool(request.form.get('is_drink_category'))
         
         category = MenuCategory(
             name=name,
             display_name=display_name,
-            order=max_order + 1,
-            is_drink_category=is_drink
+            order=order,
+            is_drink_category=is_drink_category
         )
         
         db.session.add(category)
         db.session.commit()
-        flash('Kategorie erfolgreich hinzugefügt')
+        flash('Kategorie erfolgreich hinzugefügt', 'success')
     except Exception as e:
-        flash(f'Fehler beim Hinzufügen der Kategorie: {str(e)}')
+        flash(f'Fehler beim Hinzufügen der Kategorie: {str(e)}', 'error')
     
     return redirect(url_for('admin_categories'))
 
@@ -276,15 +272,11 @@ def admin_add_category():
 def admin_delete_category(id):
     try:
         category = MenuCategory.query.get_or_404(id)
-        
-        # Lösche alle Menüeinträge in dieser Kategorie
-        MenuItem.query.filter_by(category_id=id).delete()
-        
         db.session.delete(category)
         db.session.commit()
-        flash('Kategorie und zugehörige Menüeinträge erfolgreich gelöscht')
+        flash('Kategorie erfolgreich gelöscht', 'success')
     except Exception as e:
-        flash(f'Fehler beim Löschen der Kategorie: {str(e)}')
+        flash(f'Fehler beim Löschen der Kategorie: {str(e)}', 'error')
     
     return redirect(url_for('admin_categories'))
 
@@ -308,19 +300,25 @@ def admin_hours():
 @login_required
 def admin_save_hours():
     try:
-        for hour in OpeningHours.query.all():
-            hour.closed = bool(request.form.get(f'closed_{hour.id}'))
-            if not hour.closed:
-                hour.open_time = request.form.get(f'open_time_{hour.id}')
-                hour.close_time = request.form.get(f'close_time_{hour.id}')
-            else:
-                hour.open_time = None
-                hour.close_time = None
+        days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+        
+        for day in days:
+            hours = OpeningHours.query.filter_by(day=day).first()
+            if not hours:
+                hours = OpeningHours(day=day)
+                db.session.add(hours)
+            
+            closed = request.form.get(f'{day}_closed') == 'on'
+            hours.closed = closed
+            
+            if not closed:
+                hours.open_time = request.form.get(f'{day}_open')
+                hours.close_time = request.form.get(f'{day}_close')
         
         db.session.commit()
-        flash('Öffnungszeiten erfolgreich aktualisiert')
+        flash('Öffnungszeiten erfolgreich gespeichert', 'success')
     except Exception as e:
-        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}')
+        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}', 'error')
     
     return redirect(url_for('admin_hours'))
 

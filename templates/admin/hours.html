@@ -1,171 +1,94 @@
 {% extends "admin/base.html" %}
 
-{% block content %}
-<div class="opening-hours-admin">
-    <div class="hours-section">
-        <h2>Öffnungszeiten verwalten</h2>
-        <form method="POST" action="{{ url_for('admin.save_opening_hours') }}" class="hours-form">
-            {% for hour in opening_hours %}
-            <div class="day-group">
-                <h3>{{ hour.day }}</h3>
-                <div class="time-inputs">
-                    <div class="time-group">
-                        <label>Öffnungszeit:</label>
-                        <input type="time" name="open_time_{{ hour.id }}" value="{{ hour.open_time }}" 
-                               {% if hour.closed %}disabled{% endif %} class="form-control">
-                    </div>
-                    <div class="time-group">
-                        <label>Schließzeit:</label>
-                        <input type="time" name="close_time_{{ hour.id }}" value="{{ hour.close_time }}"
-                               {% if hour.closed %}disabled{% endif %} class="form-control">
-                    </div>
-                    <div class="closed-group">
-                        <label>
-                            <input type="checkbox" name="closed_{{ hour.id }}" 
-                                   {% if hour.closed %}checked{% endif %}
-                                   onchange="toggleTimeInputs(this, {{ hour.id }})">
-                            Ruhetag
-                        </label>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+{% block header %}Öffnungszeiten verwalten{% endblock %}
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Speichern</button>
-            </div>
-        </form>
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <form action="{{ url_for('admin_save_hours') }}" method="POST">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tag</th>
+                                <th>Geschlossen?</th>
+                                <th>Öffnungszeit</th>
+                                <th>Schließzeit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hour in opening_hours %}
+                            <tr>
+                                <td>{{ hour.day }}</td>
+                                <td>
+                                    <div class="form-check">
+                                        <input type="checkbox" 
+                                               class="form-check-input" 
+                                               id="{{ hour.day }}_closed" 
+                                               name="{{ hour.day }}_closed"
+                                               {% if hour.closed %}checked{% endif %}
+                                               onchange="toggleTimeInputs(this, '{{ hour.day }}')">
+                                        <label class="form-check-label" for="{{ hour.day }}_closed">
+                                            Geschlossen
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="time" 
+                                           class="form-control" 
+                                           id="{{ hour.day }}_open" 
+                                           name="{{ hour.day }}_open"
+                                           value="{{ hour.open_time }}"
+                                           {% if hour.closed %}disabled{% endif %}>
+                                </td>
+                                <td>
+                                    <input type="time" 
+                                           class="form-control" 
+                                           id="{{ hour.day }}_close" 
+                                           name="{{ hour.day }}_close"
+                                           value="{{ hour.close_time }}"
+                                           {% if hour.closed %}disabled{% endif %}>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary">Öffnungszeiten speichern</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
+<script>
+function toggleTimeInputs(checkbox, day) {
+    const openInput = document.getElementById(`${day}_open`);
+    const closeInput = document.getElementById(`${day}_close`);
+    
+    openInput.disabled = checkbox.checked;
+    closeInput.disabled = checkbox.checked;
+    
+    if (checkbox.checked) {
+        openInput.value = '';
+        closeInput.value = '';
+    }
+}
+</script>
+
 <style>
-.opening-hours-admin {
-    padding: 20px;
-}
-
-.hours-section {
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.hours-section h2 {
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 1.8em;
-    text-align: center;
-}
-
-.day-group {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.day-group h3 {
-    color: #c17817;
-    margin-bottom: 15px;
-}
-
-.time-inputs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    align-items: end;
-}
-
-.time-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.time-group label {
-    font-weight: 500;
-    color: #666;
-}
-
-.closed-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.closed-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s;
-}
-
-.form-control:focus {
-    border-color: #c17817;
-    outline: none;
-}
-
-.form-control:disabled {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-}
-
-input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+.form-check {
     margin: 0;
 }
 
-.form-actions {
-    margin-top: 40px;
-    text-align: right;
+.table td {
+    vertical-align: middle;
 }
 
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s;
-}
-
-.btn-primary {
-    background-color: #c17817;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #a66714;
-}
-
-@media (max-width: 768px) {
-    .time-inputs {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .closed-group {
-        margin-top: 10px;
-    }
+input[type="time"] {
+    max-width: 150px;
 }
 </style>
-
-<script>
-function toggleTimeInputs(checkbox, id) {
-    const timeInputs = document.querySelectorAll(`input[type="time"][name*="_${id}"]`);
-    timeInputs.forEach(input => {
-        input.disabled = checkbox.checked;
-    });
-}
-</script>
 {% endblock %}
