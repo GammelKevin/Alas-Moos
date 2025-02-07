@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 import os
+from sqlalchemy import case
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
@@ -122,17 +123,16 @@ def init_db():
 @app.route('/')
 def home():
     opening_hours = OpeningHours.query.order_by(
-        db.case(
-            {
-                'Montag': 1,
-                'Dienstag': 2,
-                'Mittwoch': 3,
-                'Donnerstag': 4,
-                'Freitag': 5,
-                'Samstag': 6,
-                'Sonntag': 7
-            },
-            value=OpeningHours.day
+        case(
+            [
+                (OpeningHours.day == 'Montag', 1),
+                (OpeningHours.day == 'Dienstag', 2),
+                (OpeningHours.day == 'Mittwoch', 3),
+                (OpeningHours.day == 'Donnerstag', 4),
+                (OpeningHours.day == 'Freitag', 5),
+                (OpeningHours.day == 'Samstag', 6),
+                (OpeningHours.day == 'Sonntag', 7)
+            ]
         )
     ).all()
     return render_template('index.html', opening_hours=opening_hours)
@@ -348,17 +348,16 @@ def delete_menu_category(id):
 @login_required
 def admin_opening_hours():
     opening_hours = OpeningHours.query.order_by(
-        db.case(
-            {
-                'Montag': 1,
-                'Dienstag': 2,
-                'Mittwoch': 3,
-                'Donnerstag': 4,
-                'Freitag': 5,
-                'Samstag': 6,
-                'Sonntag': 7
-            },
-            value=OpeningHours.day
+        case(
+            [
+                (OpeningHours.day == 'Montag', 1),
+                (OpeningHours.day == 'Dienstag', 2),
+                (OpeningHours.day == 'Mittwoch', 3),
+                (OpeningHours.day == 'Donnerstag', 4),
+                (OpeningHours.day == 'Freitag', 5),
+                (OpeningHours.day == 'Samstag', 6),
+                (OpeningHours.day == 'Sonntag', 7)
+            ]
         )
     ).all()
     return render_template('admin/opening_hours.html', opening_hours=opening_hours)
