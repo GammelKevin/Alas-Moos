@@ -85,15 +85,7 @@
                     {% if hour.closed %}
                     <p class="closed">Ruhetag</p>
                     {% else %}
-                    <p class="hours">
-                        {% if hour.open_time_1 and hour.close_time_1 %}
-                        {{ hour.open_time_1 }} - {{ hour.close_time_1 }}
-                        {% endif %}
-                        {% if hour.open_time_2 and hour.close_time_2 %}
-                        <br>
-                        {{ hour.open_time_2 }} - {{ hour.close_time_2 }}
-                        {% endif %}
-                    </p>
+                    <p class="hours">{{ hour.open_time }} - {{ hour.close_time }}</p>
                     {% endif %}
                 </div>
                 {% endfor %}
