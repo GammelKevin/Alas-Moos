@@ -8,9 +8,12 @@ app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
 db = SQLAlchemy(app)
 
+# Login Manager Setup
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.login_message = 'Bitte melden Sie sich an, um auf diese Seite zuzugreifen.'
+login_manager.login_message_category = 'error'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,49 +52,28 @@ class MenuItem(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-def init_db():
-    db.create_all()
-    
-    # Erstelle einen Admin-Benutzer, wenn noch keiner existiert
-    if not User.query.filter_by(username='admin').first():
+def init_admin_user():
+    # Create admin user if it doesn't exist
+    admin_user = User.query.filter_by(username='admin').first()
+    if not admin_user:
         admin_user = User(
             username='admin',
-            password_hash=generate_password_hash('admin123')
+            password_hash=generate_password_hash('admin')  # Change this password in production!
         )
         db.session.add(admin_user)
-    
-    # Initialisiere Öffnungszeiten, wenn sie noch nicht existieren
-    days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-    for day in days:
-        if not OpeningHours.query.filter_by(day=day).first():
-            hours = OpeningHours(
-                day=day,
-                open_time_1='11:30',
-                close_time_1='14:00',
-                open_time_2='17:00',
-                close_time_2='22:00',
-                closed=True if day == 'Montag' else False
-            )
-            db.session.add(hours)
+        db.session.commit()
 
-    # Initialisiere Menü-Kategorien, wenn sie noch nicht existieren
-    if not MenuCategory.query.first():
-        categories = [
-            ('vorspeisen', 'Vorspeisen', 1, False),
-            ('hauptspeisen', 'Hauptspeisen', 2, False),
-            ('desserts', 'Desserts', 3, False),
-            ('getraenke', 'Getränke', 4, True)
-        ]
-        for name, display_name, order, is_drink in categories:
-            category = MenuCategory(
-                name=name,
-                display_name=display_name,
-                order=order,
-                is_drink_category=is_drink
-            )
-            db.session.add(category)
-    
-    db.session.commit()
+def init_db():
+    with app.app_context():
+        db.create_all()
+        init_admin_user()
+        
+        # Initialize opening hours if not exists
+        days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+        for day in days:
+            if not OpeningHours.query.filter_by(day=day).first():
+                db.session.add(OpeningHours(day=day))
+        db.session.commit()
 
 @app.route('/')
 def home():
@@ -118,14 +100,20 @@ def menu():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('admin'))
+        
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
+        
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            return redirect(url_for('admin'))
-        flash('Ungültige Anmeldedaten')
+            next_page = request.args.get('next')
+            return redirect(next_page if next_page else url_for('admin'))
+            
+        flash('Ungültige Anmeldedaten', 'error')
     return render_template('login.html')
 
 @app.route('/logout')
