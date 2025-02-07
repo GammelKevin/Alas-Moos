@@ -93,18 +93,40 @@
         <div class="container">
             <h2>Öffnungszeiten</h2>
             <div class="opening-hours-grid">
-                {% for hour in opening_hours %}
-                    <div class="opening-hours-item {% if hour.closed %}closed{% endif %}">
-                        <div class="day">{{ hour.day_display }}</div>
-                        <div class="hours">
-                            {% if hour.closed %}
-                                Ruhetag
-                            {% else %}
-                                {{ hour.open_time }} - {{ hour.close_time }} Uhr
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
+                <div class="opening-hours-box">
+                    <h3>Montag</h3>
+                    <p>Ruhetag</p>
+                </div>
+                <div class="opening-hours-box">
+                    <h3>Dienstag</h3>
+                    <p>11:30 - 14:00</p>
+                    <p>17:00 - 22:00</p>
+                </div>
+                <div class="opening-hours-box">
+                    <h3>Mittwoch</h3>
+                    <p>11:30 - 14:00</p>
+                    <p>17:00 - 22:00</p>
+                </div>
+                <div class="opening-hours-box">
+                    <h3>Donnerstag</h3>
+                    <p>11:30 - 14:00</p>
+                    <p>17:00 - 22:00</p>
+                </div>
+                <div class="opening-hours-box">
+                    <h3>Freitag</h3>
+                    <p>11:30 - 14:00</p>
+                    <p>17:00 - 22:00</p>
+                </div>
+                <div class="opening-hours-box">
+                    <h3>Samstag</h3>
+                    <p>11:30 - 14:00</p>
+                    <p>17:00 - 22:00</p>
+                </div>
+                <div class="opening-hours-box">
+                    <h3>Sonntag</h3>
+                    <p>11:30 - 14:00</p>
+                    <p>17:00 - 22:00</p>
+                </div>
             </div>
         </div>
     </section>
