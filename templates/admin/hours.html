@@ -1,0 +1,171 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="opening-hours-admin">
+    <div class="hours-section">
+        <h2>Öffnungszeiten verwalten</h2>
+        <form method="POST" action="{{ url_for('admin.save_opening_hours') }}" class="hours-form">
+            {% for hour in opening_hours %}
+            <div class="day-group">
+                <h3>{{ hour.day }}</h3>
+                <div class="time-inputs">
+                    <div class="time-group">
+                        <label>Öffnungszeit:</label>
+                        <input type="time" name="open_time_{{ hour.id }}" value="{{ hour.open_time }}" 
+                               {% if hour.closed %}disabled{% endif %} class="form-control">
+                    </div>
+                    <div class="time-group">
+                        <label>Schließzeit:</label>
+                        <input type="time" name="close_time_{{ hour.id }}" value="{{ hour.close_time }}"
+                               {% if hour.closed %}disabled{% endif %} class="form-control">
+                    </div>
+                    <div class="closed-group">
+                        <label>
+                            <input type="checkbox" name="closed_{{ hour.id }}" 
+                                   {% if hour.closed %}checked{% endif %}
+                                   onchange="toggleTimeInputs(this, {{ hour.id }})">
+                            Ruhetag
+                        </label>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.opening-hours-admin {
+    padding: 20px;
+}
+
+.hours-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hours-section h2 {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    text-align: center;
+}
+
+.day-group {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.day-group h3 {
+    color: #c17817;
+    margin-bottom: 15px;
+}
+
+.time-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: end;
+}
+
+.time-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.time-group label {
+    font-weight: 500;
+    color: #666;
+}
+
+.closed-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.closed-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    border-color: #c17817;
+    outline: none;
+}
+
+.form-control:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.form-actions {
+    margin-top: 40px;
+    text-align: right;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #c17817;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #a66714;
+}
+
+@media (max-width: 768px) {
+    .time-inputs {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .closed-group {
+        margin-top: 10px;
+    }
+}
+</style>
+
+<script>
+function toggleTimeInputs(checkbox, id) {
+    const timeInputs = document.querySelectorAll(`input[type="time"][name*="_${id}"]`);
+    timeInputs.forEach(input => {
+        input.disabled = checkbox.checked;
+    });
+}
+</script>
+{% endblock %}

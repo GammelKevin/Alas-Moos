@@ -98,6 +98,21 @@ def index():
         init_db()  # Initialisiere die Datenbank falls sie nicht existiert
         return redirect(url_for('index'))
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('admin'))
+        else:
+            flash('Ungültige Anmeldedaten')
+    
+    return render_template('login.html')
+
 @app.route('/admin')
 @login_required
 def admin():
@@ -110,61 +125,93 @@ def admin_menu():
     menu_items = MenuItem.query.all()
     return render_template('admin/menu.html', categories=categories, menu_items=menu_items)
 
-@app.route('/admin/menu/save', methods=['POST'])
+@app.route('/admin/menu/add', methods=['POST'])
 @login_required
-def save_menu_item():
+def admin_menu_add():
     try:
-        item_id = request.form.get('id')
         name = request.form.get('name')
         description = request.form.get('description')
-        price = float(request.form.get('price', 0))
+        price = float(request.form.get('price'))
         category_id = int(request.form.get('category'))
-        vegetarian = request.form.get('vegetarian') == 'true'
-        vegan = request.form.get('vegan') == 'true'
-        spicy = request.form.get('spicy') == 'true'
+        vegetarian = bool(request.form.get('vegetarian'))
+        vegan = bool(request.form.get('vegan'))
+        spicy = bool(request.form.get('spicy'))
         
-        if item_id:
-            # Existierendes Item aktualisieren
-            item = MenuItem.query.get(item_id)
-            if item:
-                item.name = name
-                item.description = description
-                item.price = price
-                item.category_id = category_id
-                item.vegetarian = vegetarian
-                item.vegan = vegan
-                item.spicy = spicy
-        else:
-            # Neues Item erstellen
-            item = MenuItem(
-                name=name,
-                description=description,
-                price=price,
-                category_id=category_id,
-                vegetarian=vegetarian,
-                vegan=vegan,
-                spicy=spicy
-            )
-            db.session.add(item)
+        image = request.files.get('image')
+        image_path = None
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            image_path = os.path.join('uploads', filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
-        # Bild verarbeiten
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename:
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                item.image_path = filename
+        menu_item = MenuItem(
+            name=name,
+            description=description,
+            price=price,
+            category_id=category_id,
+            vegetarian=vegetarian,
+            vegan=vegan,
+            spicy=spicy,
+            image_path=image_path
+        )
+        
+        db.session.add(menu_item)
+        db.session.commit()
+        
+        flash('Menüpunkt erfolgreich hinzugefügt')
+    except Exception as e:
+        flash(f'Fehler beim Hinzufügen des Menüpunkts: {str(e)}')
+    
+    return redirect(url_for('admin_menu'))
+
+@app.route('/admin/menu/edit/<int:id>', methods=['POST'])
+@login_required
+def admin_menu_edit(id):
+    try:
+        menu_item = MenuItem.query.get_or_404(id)
+        menu_item.name = request.form.get('name')
+        menu_item.description = request.form.get('description')
+        menu_item.price = float(request.form.get('price'))
+        menu_item.category_id = int(request.form.get('category'))
+        menu_item.vegetarian = bool(request.form.get('vegetarian'))
+        menu_item.vegan = bool(request.form.get('vegan'))
+        menu_item.spicy = bool(request.form.get('spicy'))
+        
+        image = request.files.get('image')
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            image_path = os.path.join('uploads', filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            menu_item.image_path = image_path
         
         db.session.commit()
-        return jsonify({'success': True})
+        flash('Menüpunkt erfolgreich aktualisiert')
     except Exception as e:
-        print(f"Fehler beim Speichern: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)})
+        flash(f'Fehler beim Aktualisieren des Menüpunkts: {str(e)}')
+    
+    return redirect(url_for('admin_menu'))
 
-@app.route('/admin/opening-hours')
+@app.route('/admin/menu/delete/<int:id>')
 @login_required
-def admin_opening_hours():
+def admin_menu_delete(id):
+    try:
+        menu_item = MenuItem.query.get_or_404(id)
+        if menu_item.image_path:
+            try:
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(menu_item.image_path)))
+            except:
+                pass
+        db.session.delete(menu_item)
+        db.session.commit()
+        flash('Menüpunkt erfolgreich gelöscht')
+    except Exception as e:
+        flash(f'Fehler beim Löschen des Menüpunkts: {str(e)}')
+    
+    return redirect(url_for('admin_menu'))
+
+@app.route('/admin/hours')
+@login_required
+def admin_hours():
     opening_hours = OpeningHours.query.order_by(
         case(
             (OpeningHours.day == 'Montag', 1),
@@ -178,46 +225,29 @@ def admin_opening_hours():
     ).all()
     return render_template('admin/opening_hours.html', opening_hours=opening_hours)
 
-@app.route('/admin/opening-hours/save', methods=['POST'])
+@app.route('/admin/hours/update', methods=['POST'])
 @login_required
-def save_opening_hours():
+def admin_hours_update():
     try:
-        data = request.get_json()
-        for item in data:
-            day = item['day']
-            opening_hours = OpeningHours.query.filter_by(day=day).first()
+        for day in ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']:
+            hours = OpeningHours.query.filter_by(day=day).first()
+            if not hours:
+                hours = OpeningHours(day=day)
+                db.session.add(hours)
             
-            if not opening_hours:
-                opening_hours = OpeningHours(day=day)
-                db.session.add(opening_hours)
+            closed = request.form.get(f'{day}_closed') == 'on'
+            hours.closed = closed
             
-            opening_hours.closed = item['closed']
-            if not item['closed']:
-                opening_hours.open_time = item['openTime']
-                opening_hours.close_time = item['closeTime']
-            else:
-                opening_hours.open_time = None
-                opening_hours.close_time = None
+            if not closed:
+                hours.open_time = request.form.get(f'{day}_open')
+                hours.close_time = request.form.get(f'{day}_close')
         
         db.session.commit()
-        return jsonify({'success': True})
+        flash('Öffnungszeiten erfolgreich aktualisiert')
     except Exception as e:
-        print(f"Fehler beim Speichern der Öffnungszeiten: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
-        
-        if user and user.check_password(password):
-            login_user(user)
-            return redirect(url_for('admin'))
-        
-        flash('Ungültige Anmeldedaten')
-    return render_template('login.html')
+        flash(f'Fehler beim Aktualisieren der Öffnungszeiten: {str(e)}')
+    
+    return redirect(url_for('admin_hours'))
 
 @app.route('/logout')
 @login_required

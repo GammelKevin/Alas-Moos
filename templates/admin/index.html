@@ -1,53 +1,117 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="admin-section">
-    <h2>Öffnungszeiten verwalten</h2>
-    <form method="POST" action="{{ url_for('save_opening_hours') }}" class="admin-form">
-        {% for hour in opening_hours %}
-        <div class="form-group">
-            <h3>{{ hour.day }}</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <div>
-                    <label>Erste Öffnungszeit:</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="time" name="open_time_1_{{ hour.id }}" value="{{ hour.open_time_1 }}" {% if hour.closed %}disabled{% endif %}>
-                        <input type="time" name="close_time_1_{{ hour.id }}" value="{{ hour.close_time_1 }}" {% if hour.closed %}disabled{% endif %}>
-                    </div>
-                </div>
-                <div>
-                    <label>Zweite Öffnungszeit:</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="time" name="open_time_2_{{ hour.id }}" value="{{ hour.open_time_2 }}" {% if hour.closed %}disabled{% endif %}>
-                        <input type="time" name="close_time_2_{{ hour.id }}" value="{{ hour.close_time_2 }}" {% if hour.closed %}disabled{% endif %}>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center;">
-                    <label>
-                        <input type="checkbox" name="closed_{{ hour.id }}" {% if hour.closed %}checked{% endif %} onchange="toggleTimeInputs(this, {{ hour.id }})">
-                        Ruhetag
-                    </label>
-                </div>
+<div class="dashboard">
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fas fa-utensils"></i>
             </div>
+            <h3>Speisekarte</h3>
+            <p>Verwalten Sie die Speisekarte und Menüpunkte.</p>
+            <a href="{{ url_for('admin_menu_items') }}" class="btn">Zur Speisekarte</a>
         </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary">Speichern</button>
-    </form>
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <h3>Kategorien</h3>
+            <p>Verwalten Sie die Menü-Kategorien.</p>
+            <a href="{{ url_for('admin_menu_categories') }}" class="btn">Zu den Kategorien</a>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3>Öffnungszeiten</h3>
+            <p>Aktualisieren Sie die Öffnungszeiten.</p>
+            <a href="{{ url_for('admin_opening_hours') }}" class="btn">Zu den Öffnungszeiten</a>
+        </div>
+    </div>
 </div>
 
-<script>
-function toggleTimeInputs(checkbox, id) {
-    const timeInputs = document.querySelectorAll(`input[type="time"][name*="_${id}"]`);
-    timeInputs.forEach(input => {
-        input.disabled = checkbox.checked;
-    });
+<style>
+.dashboard {
+    padding: 20px;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        toggleTimeInputs(checkbox, checkbox.name.split('_')[1]);
-    });
-});
-</script>
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: rgba(193, 120, 23, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon i {
+    font-size: 32px;
+    color: #c17817;
+}
+
+.dashboard-card h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.dashboard-card p {
+    color: #666;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.dashboard-card .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #c17817;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.dashboard-card .btn:hover {
+    background: #a66714;
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 15px;
+    }
+
+    .dashboard-grid {
+        gap: 20px;
+    }
+
+    .dashboard-card {
+        padding: 20px;
+    }
+}
+</style>
 {% endblock %}

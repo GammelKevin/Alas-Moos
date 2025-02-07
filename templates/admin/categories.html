@@ -1,0 +1,259 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="categories-admin">
+    <div class="add-category-section">
+        <h2>Neue Kategorie hinzufügen</h2>
+        <form action="{{ url_for('admin.add_category') }}" method="POST" class="add-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="display_name">Anzeigename*</label>
+                    <input type="text" id="display_name" name="display_name" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="is_drink_category" name="is_drink_category" class="form-check">
+                        <label for="is_drink_category">Getränkekategorie</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Hinzufügen</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="categories-section">
+        <h2>Kategorien verwalten</h2>
+        
+        <!-- Speisekategorien -->
+        <div class="category-group">
+            <h3>Speisekategorien</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                            {% if not category.is_drink_category %}
+                                <tr>
+                                    <td>{{ category.display_name }}</td>
+                                    <td>
+                                        <form action="{{ url_for('admin.delete_category', id=category.id) }}" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Wirklich löschen? Alle Menüeinträge in dieser Kategorie werden ebenfalls gelöscht!')">
+                                                Löschen
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Getränkekategorien -->
+        <div class="category-group">
+            <h3>Getränkekategorien</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                            {% if category.is_drink_category %}
+                                <tr>
+                                    <td>{{ category.display_name }}</td>
+                                    <td>
+                                        <form action="{{ url_for('admin.delete_category', id=category.id) }}" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Wirklich löschen? Alle Menüeinträge in dieser Kategorie werden ebenfalls gelöscht!')">
+                                                Löschen
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.categories-admin {
+    padding: 20px;
+}
+
+.add-category-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+}
+
+.add-category-section h2 {
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 1.8em;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 32px;
+}
+
+.form-check {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    border-color: #c17817;
+    outline: none;
+}
+
+.form-actions {
+    margin-top: 30px;
+    text-align: right;
+}
+
+.categories-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.categories-section h2 {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    text-align: center;
+}
+
+.category-group {
+    margin-bottom: 40px;
+}
+
+.category-group h3 {
+    color: #c17817;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #c17817;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    margin: 0 -20px;
+    padding: 0 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #c17817;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #a66714;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .table-responsive {
+        margin: 0 -15px;
+        padding: 0 15px;
+    }
+
+    td, th {
+        padding: 8px;
+    }
+
+    .checkbox-group {
+        margin-top: 0;
+    }
+}
+</style>
+{% endblock %}
