@@ -124,18 +124,17 @@ def init_db():
 def home():
     opening_hours = OpeningHours.query.order_by(
         case(
-            [
-                (OpeningHours.day == 'Montag', 1),
-                (OpeningHours.day == 'Dienstag', 2),
-                (OpeningHours.day == 'Mittwoch', 3),
-                (OpeningHours.day == 'Donnerstag', 4),
-                (OpeningHours.day == 'Freitag', 5),
-                (OpeningHours.day == 'Samstag', 6),
-                (OpeningHours.day == 'Sonntag', 7)
-            ]
+            (OpeningHours.day == 'Montag', 1),
+            (OpeningHours.day == 'Dienstag', 2),
+            (OpeningHours.day == 'Mittwoch', 3),
+            (OpeningHours.day == 'Donnerstag', 4),
+            (OpeningHours.day == 'Freitag', 5),
+            (OpeningHours.day == 'Samstag', 6),
+            (OpeningHours.day == 'Sonntag', 7)
         )
     ).all()
-    return render_template('index.html', opening_hours=opening_hours)
+    menu_categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('index.html', opening_hours=opening_hours, categories=menu_categories)
 
 @app.route('/menu')
 def menu():
@@ -349,15 +348,13 @@ def delete_menu_category(id):
 def admin_opening_hours():
     opening_hours = OpeningHours.query.order_by(
         case(
-            [
-                (OpeningHours.day == 'Montag', 1),
-                (OpeningHours.day == 'Dienstag', 2),
-                (OpeningHours.day == 'Mittwoch', 3),
-                (OpeningHours.day == 'Donnerstag', 4),
-                (OpeningHours.day == 'Freitag', 5),
-                (OpeningHours.day == 'Samstag', 6),
-                (OpeningHours.day == 'Sonntag', 7)
-            ]
+            (OpeningHours.day == 'Montag', 1),
+            (OpeningHours.day == 'Dienstag', 2),
+            (OpeningHours.day == 'Mittwoch', 3),
+            (OpeningHours.day == 'Donnerstag', 4),
+            (OpeningHours.day == 'Freitag', 5),
+            (OpeningHours.day == 'Samstag', 6),
+            (OpeningHours.day == 'Sonntag', 7)
         )
     ).all()
     return render_template('admin/opening_hours.html', opening_hours=opening_hours)
