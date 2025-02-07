@@ -171,6 +171,56 @@ def admin_menu_items():
     categories = MenuCategory.query.order_by(MenuCategory.order).all()
     return render_template('admin/menu_items.html', items=items, categories=categories)
 
+@app.route('/admin/menu-items/edit/<int:item_id>', methods=['GET', 'POST'])
+@login_required
+def edit_menu_item(item_id):
+    item = MenuItem.query.get_or_404(item_id)
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    
+    if request.method == 'POST':
+        try:
+            item.name = request.form.get('name')
+            item.description = request.form.get('description')
+            item.price = float(request.form.get('price'))
+            item.category_id = int(request.form.get('category_id'))
+            item.order = int(request.form.get('order'))
+            item.active = bool(request.form.get('active'))
+            
+            db.session.commit()
+            flash('Gericht wurde erfolgreich aktualisiert', 'success')
+            return redirect(url_for('admin_menu_items'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Aktualisieren des Gerichts: {str(e)}', 'error')
+    
+    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
+
+@app.route('/admin/menu-items/add', methods=['GET', 'POST'])
+@login_required
+def add_menu_item():
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    
+    if request.method == 'POST':
+        try:
+            new_item = MenuItem(
+                name=request.form.get('name'),
+                description=request.form.get('description'),
+                price=float(request.form.get('price')),
+                category_id=int(request.form.get('category_id')),
+                order=int(request.form.get('order')),
+                active=bool(request.form.get('active'))
+            )
+            
+            db.session.add(new_item)
+            db.session.commit()
+            flash('Neues Gericht wurde erfolgreich hinzugefügt', 'success')
+            return redirect(url_for('admin_menu_items'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Fehler beim Hinzufügen des Gerichts: {str(e)}', 'error')
+    
+    return render_template('admin/add_menu_item.html', categories=categories)
+
 @app.route('/admin/menu-categories/add', methods=['POST'])
 @login_required
 def add_menu_category():
@@ -219,53 +269,6 @@ def delete_menu_category(id):
     db.session.commit()
     flash('Kategorie wurde erfolgreich gelöscht', 'success')
     return redirect(url_for('admin_menu_categories'))
-
-@app.route('/admin/menu-items/add', methods=['POST'])
-@login_required
-def add_menu_item():
-    name = request.form.get('name')
-    description = request.form.get('description')
-    price = request.form.get('price', type=float)
-    category_id = request.form.get('category_id', type=int)
-    order = request.form.get('order', type=int, default=0)
-    is_drink = 'is_drink' in request.form
-    
-    item = MenuItem(
-        name=name,
-        description=description,
-        price=price,
-        category_id=category_id,
-        order=order,
-        is_drink=is_drink,
-        active=True
-    )
-    
-    db.session.add(item)
-    db.session.commit()
-    
-    flash('Gericht wurde erfolgreich hinzugefügt', 'success')
-    return redirect(url_for('admin_menu_items'))
-
-@app.route('/admin/menu-items/edit/<int:id>', methods=['GET', 'POST'])
-@login_required
-def edit_menu_item(id):
-    item = MenuItem.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        item.name = request.form.get('name')
-        item.description = request.form.get('description')
-        item.price = request.form.get('price', type=float)
-        item.category_id = request.form.get('category_id', type=int)
-        item.order = request.form.get('order', type=int, default=0)
-        item.is_drink = 'is_drink' in request.form
-        item.active = 'active' in request.form
-        
-        db.session.commit()
-        flash('Gericht wurde erfolgreich aktualisiert', 'success')
-        return redirect(url_for('admin_menu_items'))
-    
-    categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
 
 @app.route('/admin/menu-items/delete/<int:id>', methods=['POST'])
 @login_required
