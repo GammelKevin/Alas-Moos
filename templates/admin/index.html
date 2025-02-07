@@ -1,117 +1,78 @@
 {% extends "admin/base.html" %}
 
+{% block header %}Dashboard{% endblock %}
+
 {% block content %}
-<div class="dashboard">
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <div class="card-icon">
-                <i class="fas fa-utensils"></i>
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Speisekarte verwalten 🍽️</h5>
+                <p class="card-text">Füge neue Gerichte hinzu oder bearbeite bestehende</p>
+                <a href="{{ url_for('admin_menu') }}" class="btn btn-light">Zur Speisekarte</a>
             </div>
-            <h3>Speisekarte</h3>
-            <p>Verwalten Sie die Speisekarte und Menüpunkte.</p>
-            <a href="{{ url_for('admin_menu_items') }}" class="btn">Zur Speisekarte</a>
         </div>
-
-        <div class="dashboard-card">
-            <div class="card-icon">
-                <i class="fas fa-list"></i>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Kategorien verwalten 📑</h5>
+                <p class="card-text">Organisiere deine Menü-Kategorien</p>
+                <a href="{{ url_for('admin_categories') }}" class="btn btn-light">Zu den Kategorien</a>
             </div>
-            <h3>Kategorien</h3>
-            <p>Verwalten Sie die Menü-Kategorien.</p>
-            <a href="{{ url_for('admin_menu_categories') }}" class="btn">Zu den Kategorien</a>
         </div>
-
-        <div class="dashboard-card">
-            <div class="card-icon">
-                <i class="fas fa-clock"></i>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Öffnungszeiten 🕒</h5>
+                <p class="card-text">Aktualisiere die Öffnungszeiten</p>
+                <a href="{{ url_for('admin_hours') }}" class="btn btn-light">Zu den Öffnungszeiten</a>
             </div>
-            <h3>Öffnungszeiten</h3>
-            <p>Aktualisieren Sie die Öffnungszeiten.</p>
-            <a href="{{ url_for('admin_opening_hours') }}" class="btn">Zu den Öffnungszeiten</a>
         </div>
     </div>
 </div>
 
 <style>
-.dashboard {
-    padding: 20px;
-}
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.dashboard-card {
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    text-align: center;
+.card {
+    border: none;
+    border-radius: 15px;
     transition: transform 0.2s;
 }
 
-.dashboard-card:hover {
+.card:hover {
     transform: translateY(-5px);
 }
 
-.card-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: rgba(193, 120, 23, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.card-icon i {
-    font-size: 32px;
-    color: #c17817;
-}
-
-.dashboard-card h3 {
+.btn-light {
     color: #333;
-    margin-bottom: 15px;
-    font-size: 1.5em;
+    font-weight: 500;
 }
 
-.dashboard-card p {
-    color: #666;
-    margin-bottom: 25px;
-    line-height: 1.5;
+.btn-light:hover {
+    background-color: #f8f9fa;
+    color: #000;
 }
 
-.dashboard-card .btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: #c17817;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.2s;
+.card-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
 }
 
-.dashboard-card .btn:hover {
-    background: #a66714;
+.card-text {
+    margin-bottom: 1.5rem;
 }
 
-@media (max-width: 768px) {
-    .dashboard {
-        padding: 15px;
-    }
+.bg-primary {
+    background: linear-gradient(45deg, #c17817, #e69019) !important;
+}
 
-    .dashboard-grid {
-        gap: 20px;
-    }
+.bg-success {
+    background: linear-gradient(45deg, #2ecc71, #27ae60) !important;
+}
 
-    .dashboard-card {
-        padding: 20px;
-    }
+.bg-info {
+    background: linear-gradient(45deg, #3498db, #2980b9) !important;
 }
 </style>
 {% endblock %}
