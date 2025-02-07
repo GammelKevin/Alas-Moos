@@ -29,66 +29,56 @@
         </div>
     </nav>
 
-    <section id="home" class="hero">
-        <div class="hero-image"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content content-reveal">
-            <h1>Restaurant ALAS</h1>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Alas</h1>
             <p>Griechische Spezialitäten in Moos</p>
             <a href="#kontakt" class="cta-button">Tisch reservieren</a>
         </div>
     </section>
 
+    <!-- About Section -->
     <section id="about" class="about-section">
         <div class="container">
-            <div class="about-grid">
-                <div class="about-image">
-                    <img src="static/images/about.jpg" alt="Restaurant ALAS Ambiente">
-                </div>
-                <div class="about-content content-reveal">
-                    <h2>Willkommen bei ALAS</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Willkommen bei Alas</h2>
+                    <p>Genießen Sie authentische griechische Küche in gemütlicher Atmosphäre. Unser Restaurant bietet Ihnen traditionelle Spezialitäten, zubereitet mit frischen Zutaten und viel Liebe zum Detail.</p>
                     <p>Entdecken Sie die authentische griechische Küche in unserem familiär geführten Restaurant in Moos. Wir verwenden nur die besten Zutaten und traditionelle Rezepte, um Ihnen ein unvergessliches Geschmackserlebnis zu bieten.</p>
-                    <p>Genießen Sie unsere mediterranen Spezialitäten in einer gemütlichen Atmosphäre. Unser freundliches Team freut sich darauf, Sie zu verwöhnen.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="specialties-section">
-        <div class="container reveal-section">
-            <h2 class="section-title">Unsere Spezialitäten</h2>
-            <div class="specialties-grid">
-                <div class="specialty-card">
-                    <div class="card-image">
-                        <img src="{{ url_for('static', filename='images/gyros.jpg') }}" alt="Gyros">
-                    </div>
-                    <div class="card-content">
-                        <h3>Gyros Spezial</h3>
-                        <p>Zartes Schweinefleisch mit hausgemachter Tzatziki</p>
-                    </div>
-                </div>
-                <div class="specialty-card">
-                    <div class="card-image">
-                        <img src="{{ url_for('static', filename='images/souvlaki.jpg') }}" alt="Souvlaki">
-                    </div>
-                    <div class="card-content">
-                        <h3>Souvlaki</h3>
-                        <p>Gegrillte Fleischspieße mit mediterranen Gewürzen</p>
+    <!-- Speisekarte Preview -->
+    <section class="menu-preview-section">
+        <div class="container">
+            <h2>Unsere Spezialitäten</h2>
+            <div class="menu-preview">
+                <div class="menu-category">
+                    <h3>Vorspeisen</h3>
+                    <div class="menu-items">
+                        {% for item in food_items[:3] %}
+                        <div class="menu-item">
+                            <h4>{{ item.name }}</h4>
+                            <p class="description">{{ item.description }}</p>
+                            <span class="price">{{ "%.2f"|format(item.price) }}€</span>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                <div class="specialty-card">
-                    <div class="card-image">
-                        <img src="{{ url_for('static', filename='images/calamari.jpg') }}" alt="Calamari">
-                    </div>
-                    <div class="card-content">
-                        <h3>Calamari</h3>
-                        <p>Frittierte Tintenfischringe mit Knoblauchsauce</p>
-                    </div>
-                </div>
+            </div>
+            <div class="menu-link">
+                <a href="{{ url_for('menu') }}" class="btn">Zur Speisekarte</a>
             </div>
         </div>
     </section>
 
+    <!-- Öffnungszeiten Section -->
     <section class="opening-hours-section" id="opening-hours">
         <div class="container">
             <h2>Öffnungszeiten</h2>
@@ -131,18 +121,19 @@
         </div>
     </section>
 
-    <section id="kontakt" class="contact-section parallax">
+    <!-- Kontakt Section -->
+    <section id="kontakt" class="contact-section">
         <div class="container">
-            <div class="contact-grid">
+            <h2>Kontakt & Reservierung</h2>
+            <div class="contact-content">
                 <div class="contact-info">
-                    <h2>Reservieren Sie Ihren Tisch</h2>
                     <div class="info-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <p>Bundesstraße 39<br>94554 Moos</p>
+                        <p>Münchener Str. 127<br>85051 Ingolstadt</p>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-phone"></i>
-                        <p>09938 2320307</p>
+                        <p>08441 497797</p>
                     </div>
                 </div>
                 <form id="reservierung" class="contact-form">
@@ -150,45 +141,48 @@
                         <input type="text" id="name" name="name" placeholder="Name" required>
                     </div>
                     <div class="form-group">
-                        <input type="tel" id="telefon" name="telefon" placeholder="Telefon" required>
-                    </div>
-                    <div class="form-group split">
-                        <input type="date" id="datum" name="datum" required>
-                        <input type="time" id="zeit" name="zeit" required>
+                        <input type="email" id="email" name="email" placeholder="E-Mail" required>
                     </div>
                     <div class="form-group">
-                        <input type="number" id="personen" name="personen" placeholder="Anzahl Personen" min="1" required>
+                        <input type="tel" id="phone" name="phone" placeholder="Telefon" required>
                     </div>
                     <div class="form-group">
-                        <textarea id="nachricht" name="nachricht" placeholder="Besondere Wünsche"></textarea>
+                        <textarea id="message" name="message" placeholder="Ihre Nachricht" required></textarea>
                     </div>
-                    <button type="submit" class="submit-btn">Reservierung Anfragen</button>
+                    <button type="submit" class="btn">Nachricht senden</button>
                 </form>
             </div>
         </div>
     </section>
+    {% endblock %}
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <h3>ALAS Restaurant</h3>
-                    <p>Bundesstraße 39</p>
-                    <p>94554 Moos, Bayern</p>
-                    <p>Tel: 09938 2320307</p>
-                </div>
-                <div class="footer-social">
-                    <h3>Folgen Sie uns</h3>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/p/Griechisches-Restaurant-ALAS-61552077044507/?locale=de_DE" target="_blank" rel="noopener noreferrer" class="social-link">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                    </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Kontakt</h3>
+                <p>Telefon: <a href="tel:+498441497797">08441 497797</a></p>
+                <p>Email: <a href="mailto:info@alas-moos.de">info@alas-moos.de</a></p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Adresse</h3>
+                <p>Alas</p>
+                <p>Münchener Str. 127</p>
+                <p>85051 Ingolstadt</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Folgen Sie uns</h3>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/profile.php?id=100063556361475" target="_blank" class="social-link">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Restaurant ALAS - Alle Rechte vorbehalten</p>
-            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Alas. Alle Rechte vorbehalten.</p>
         </div>
     </footer>
 

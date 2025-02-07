@@ -9,18 +9,12 @@
     <style>
         /* Navigation Styles */
         nav {
-            background-color: rgba(10, 10, 10, 0.95);
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             position: fixed;
             width: 100%;
-            top: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(225,155,76,0.1);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            top: 0;
         }
 
         .nav-content {
@@ -31,74 +25,73 @@
         }
 
         .logo a {
-            color: #e19b4c;
-            text-decoration: none;
             font-size: 1.5rem;
-            font-weight: 600;
-            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: #333;
+            text-decoration: none;
         }
 
         .nav-links {
             display: flex;
             gap: 2rem;
+            list-style: none;
             margin: 0;
             padding: 0;
-            list-style: none;
-        }
-
-        .nav-links li {
-            position: relative;
         }
 
         .nav-links a {
-            color: #fff;
+            color: #333;
             text-decoration: none;
-            font-size: 1rem;
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: color 0.3s;
         }
 
         .nav-links a:hover {
-            color: #e19b4c;
+            color: #ff4b4b;
         }
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 50%;
-            background-color: #e19b4c;
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
+        /* Footer Styles */
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 3rem 0 1rem;
         }
 
-        .nav-links a:hover::after {
-            width: 100%;
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
 
-        /* Add padding to main content to account for fixed navbar */
-        main {
-            padding-top: 70px;
+        .footer-section h3 {
+            color: #fff;
+            margin-bottom: 1rem;
         }
 
-        @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem 0;
-            }
+        .footer-section p {
+            margin: 0.5rem 0;
+        }
 
-            .nav-links {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
 
-            main {
-                padding-top: 120px;
-            }
+        .social-links a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #ff4b4b;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
@@ -115,6 +108,9 @@
                         <li><a href="{{ url_for('menu') }}">Speisekarte</a></li>
                         <li><a href="{{ url_for('home') }}#about">Über uns</a></li>
                         <li><a href="{{ url_for('home') }}#contact">Kontakt</a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('admin.index') }}">Admin</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
@@ -130,25 +126,26 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Kontakt</h3>
-                    <p>Telefon: 08441 2206</p>
-                    <p>Email: info@alasmoos.de</p>
+                    <p>Telefon: <a href="tel:+499938232030709938">09938 2320307</a></p>
+                    <p>Email: <a href="mailto:info@alas-moos.de">info@alas-moos.de</a></p>
                 </div>
                 <div class="footer-section">
                     <h3>Adresse</h3>
-                    <p>Alas Moos</p>
-                    <p>Münchener Str. 127</p>
-                    <p>85051 Ingolstadt</p>
+                    <p>ALAS</p>
+                    <p>Bundesstraße 39</p>
+                    <p>94554 Moos</p>
                 </div>
                 <div class="footer-section">
                     <h3>Folgen Sie uns</h3>
                     <div class="social-links">
-                        <a href="#" target="_blank">Facebook</a>
-                        <a href="#" target="_blank">Instagram</a>
+                        <a href="https://www.facebook.com/profile.php?id=100063556361475" target="_blank" class="social-link">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Alas Moos. Alle Rechte vorbehalten.</p>
+                <p>&copy; 2024 Restaurant ALAS. Alle Rechte vorbehalten.</p>
             </div>
         </div>
     </footer>
