@@ -1,152 +1,63 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="admin-container">
-    <h1>Menü-Kategorien verwalten</h1>
-
-    <!-- Neue Kategorie hinzufügen -->
-    <section class="admin-section">
-        <h2>Neue Kategorie hinzufügen</h2>
-        <form action="{{ url_for('add_menu_category') }}" method="post" class="admin-form">
-            <div class="form-group">
-                <label for="name">Name (für URLs)</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="display_name">Anzeigename</label>
-                <input type="text" id="display_name" name="display_name" required>
-            </div>
-            <div class="form-group">
-                <label for="order">Reihenfolge</label>
-                <input type="number" id="order" name="order" required>
-            </div>
-            <div class="form-group checkbox-group">
-                <input type="checkbox" id="is_drink_category" name="is_drink_category">
-                <label for="is_drink_category">Getränke-Kategorie</label>
-            </div>
-            <button type="submit" class="admin-button">Kategorie hinzufügen</button>
-        </form>
-    </section>
-
-    <!-- Bestehende Kategorien -->
-    <section class="admin-section">
-        <h2>Bestehende Kategorien</h2>
-        <div class="categories-grid">
-            {% for category in categories %}
-            <div class="category-card">
-                <form action="{{ url_for('edit_menu_category', id=category.id) }}" method="post">
-                    <div class="form-group">
-                        <label for="name_{{ category.id }}">Name</label>
-                        <input type="text" id="name_{{ category.id }}" name="name" value="{{ category.name }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="display_name_{{ category.id }}">Anzeigename</label>
-                        <input type="text" id="display_name_{{ category.id }}" name="display_name" value="{{ category.display_name }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="order_{{ category.id }}">Reihenfolge</label>
-                        <input type="number" id="order_{{ category.id }}" name="order" value="{{ category.order }}" required>
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <input type="checkbox" id="is_drink_{{ category.id }}" name="is_drink_category" {% if category.is_drink_category %}checked{% endif %}>
-                        <label for="is_drink_{{ category.id }}">Getränke-Kategorie</label>
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <input type="checkbox" id="active_{{ category.id }}" name="active" {% if category.active %}checked{% endif %}>
-                        <label for="active_{{ category.id }}">Aktiv</label>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="admin-button">Speichern</button>
-                        <button type="button" class="admin-button delete" onclick="deleteCategory({{ category.id }})">Löschen</button>
-                    </div>
-                </form>
-            </div>
-            {% endfor %}
+<div class="admin-section">
+    <h2>Menü-Kategorien verwalten</h2>
+    
+    <form method="POST" action="{{ url_for('add_menu_category') }}" class="admin-form" style="margin-bottom: 2rem;">
+        <div class="form-group">
+            <label for="name">Name (intern)</label>
+            <input type="text" id="name" name="name" required>
         </div>
-    </section>
+        <div class="form-group">
+            <label for="display_name">Anzeigename</label>
+            <input type="text" id="display_name" name="display_name" required>
+        </div>
+        <div class="form-group">
+            <label for="order">Reihenfolge</label>
+            <input type="number" id="order" name="order" value="0">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="is_drink_category">
+                Getränke-Kategorie
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Kategorie hinzufügen</button>
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Anzeigename</th>
+                    <th>Reihenfolge</th>
+                    <th>Typ</th>
+                    <th>Status</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.display_name }}</td>
+                    <td>{{ category.order }}</td>
+                    <td>{{ 'Getränke' if category.is_drink_category else 'Speisen' }}</td>
+                    <td>{{ 'Aktiv' if category.active else 'Inaktiv' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('edit_menu_category', id=category.id) }}" class="btn btn-primary">Bearbeiten</a>
+                            <form method="POST" action="{{ url_for('delete_menu_category', id=category.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Sind Sie sicher, dass Sie diese Kategorie löschen möchten?')">Löschen</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<form id="deleteForm" method="post" style="display: none;">
-</form>
-
-<style>
-.categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.category-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid rgba(225, 155, 76, 0.2);
-}
-
-.category-card:hover {
-    border-color: var(--gold);
-}
-
-.admin-form {
-    max-width: 500px;
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--light);
-}
-
-.form-group input[type="text"],
-.form-group input[type="number"] {
-    width: 100%;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(225, 155, 76, 0.2);
-    border-radius: 4px;
-    color: var(--light);
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.checkbox-group label {
-    margin: 0;
-}
-
-.button-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.admin-button.delete {
-    background: rgba(255, 68, 68, 0.1);
-    border-color: #ff4444;
-    color: #ff4444;
-}
-
-.admin-button.delete:hover {
-    background: #ff4444;
-    color: var(--dark);
-}
-</style>
-
-<script>
-function deleteCategory(id) {
-    if (confirm('Sind Sie sicher, dass Sie diese Kategorie löschen möchten?')) {
-        const form = document.getElementById('deleteForm');
-        form.action = "{{ url_for('delete_menu_category', id=0) }}".replace('0', id);
-        form.submit();
-    }
-}
-</script>
 {% endblock %}

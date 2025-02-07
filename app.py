@@ -137,45 +137,8 @@ def logout():
 @app.route('/admin')
 @login_required
 def admin():
-    opening_hours = {}
-    for hour in OpeningHours.query.all():
-        opening_hours[hour.day.lower()] = {
-            'open_1': hour.open_time_1,
-            'close_1': hour.close_time_1,
-            'open_2': hour.open_time_2,
-            'close_2': hour.close_time_2,
-            'closed': hour.closed
-        }
+    opening_hours = OpeningHours.query.order_by(OpeningHours.id).all()
     return render_template('admin/index.html', opening_hours=opening_hours)
-
-@app.route('/admin/opening-hours', methods=['POST'])
-@login_required
-def save_opening_hours():
-    days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-    
-    for day in days:
-        hours = OpeningHours.query.filter_by(day=day).first()
-        if not hours:
-            hours = OpeningHours(day=day)
-            db.session.add(hours)
-        
-        day_lower = day.lower()
-        hours.closed = request.form.get(f'{day_lower}_closed') is not None
-        
-        if not hours.closed:
-            hours.open_time_1 = request.form.get(f'{day_lower}_open_1')
-            hours.close_time_1 = request.form.get(f'{day_lower}_close_1')
-            hours.open_time_2 = request.form.get(f'{day_lower}_open_2')
-            hours.close_time_2 = request.form.get(f'{day_lower}_close_2')
-        else:
-            hours.open_time_1 = None
-            hours.close_time_1 = None
-            hours.open_time_2 = None
-            hours.close_time_2 = None
-    
-    db.session.commit()
-    flash('Öffnungszeiten wurden aktualisiert')
-    return redirect(url_for('admin'))
 
 @app.route('/admin/menu-categories')
 @login_required
@@ -183,39 +146,52 @@ def admin_menu_categories():
     categories = MenuCategory.query.order_by(MenuCategory.order).all()
     return render_template('admin/menu_categories.html', categories=categories)
 
+@app.route('/admin/menu-items')
+@login_required
+def admin_menu_items():
+    items = MenuItem.query.order_by(MenuItem.category_id, MenuItem.order).all()
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('admin/menu_items.html', items=items, categories=categories)
+
 @app.route('/admin/menu-categories/add', methods=['POST'])
 @login_required
 def add_menu_category():
     name = request.form.get('name')
     display_name = request.form.get('display_name')
-    order = request.form.get('order', type=int)
-    is_drink = request.form.get('is_drink_category') == 'on'
+    order = request.form.get('order', type=int, default=0)
+    is_drink_category = 'is_drink_category' in request.form
     
     category = MenuCategory(
         name=name,
         display_name=display_name,
         order=order,
-        is_drink_category=is_drink
+        is_drink_category=is_drink_category,
+        active=True
     )
+    
     db.session.add(category)
     db.session.commit()
     
-    flash('Kategorie wurde hinzugefügt')
+    flash('Kategorie wurde erfolgreich hinzugefügt', 'success')
     return redirect(url_for('admin_menu_categories'))
 
-@app.route('/admin/menu-categories/edit/<int:id>', methods=['POST'])
+@app.route('/admin/menu-categories/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_menu_category(id):
     category = MenuCategory.query.get_or_404(id)
-    category.name = request.form.get('name')
-    category.display_name = request.form.get('display_name')
-    category.order = request.form.get('order', type=int)
-    category.is_drink_category = request.form.get('is_drink_category') == 'on'
-    category.active = request.form.get('active') == 'on'
     
-    db.session.commit()
-    flash('Kategorie wurde aktualisiert')
-    return redirect(url_for('admin_menu_categories'))
+    if request.method == 'POST':
+        category.name = request.form.get('name')
+        category.display_name = request.form.get('display_name')
+        category.order = request.form.get('order', type=int, default=0)
+        category.is_drink_category = 'is_drink_category' in request.form
+        category.active = 'active' in request.form
+        
+        db.session.commit()
+        flash('Kategorie wurde erfolgreich aktualisiert', 'success')
+        return redirect(url_for('admin_menu_categories'))
+    
+    return render_template('admin/edit_menu_category.html', category=category)
 
 @app.route('/admin/menu-categories/delete/<int:id>', methods=['POST'])
 @login_required
@@ -223,15 +199,8 @@ def delete_menu_category(id):
     category = MenuCategory.query.get_or_404(id)
     db.session.delete(category)
     db.session.commit()
-    flash('Kategorie wurde gelöscht')
+    flash('Kategorie wurde erfolgreich gelöscht', 'success')
     return redirect(url_for('admin_menu_categories'))
-
-@app.route('/admin/menu-items')
-@login_required
-def admin_menu_items():
-    items = MenuItem.query.join(MenuCategory).order_by(MenuCategory.order, MenuItem.order).all()
-    categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    return render_template('admin/menu_items.html', items=items, categories=categories)
 
 @app.route('/admin/menu-items/add', methods=['POST'])
 @login_required
@@ -240,8 +209,8 @@ def add_menu_item():
     description = request.form.get('description')
     price = request.form.get('price', type=float)
     category_id = request.form.get('category_id', type=int)
-    order = request.form.get('order', type=int)
-    is_drink = request.form.get('is_drink') == 'on'
+    order = request.form.get('order', type=int, default=0)
+    is_drink = 'is_drink' in request.form
     
     item = MenuItem(
         name=name,
@@ -249,29 +218,36 @@ def add_menu_item():
         price=price,
         category_id=category_id,
         order=order,
-        is_drink=is_drink
+        is_drink=is_drink,
+        active=True
     )
+    
     db.session.add(item)
     db.session.commit()
     
-    flash('Gericht wurde hinzugefügt')
+    flash('Gericht wurde erfolgreich hinzugefügt', 'success')
     return redirect(url_for('admin_menu_items'))
 
-@app.route('/admin/menu-items/edit/<int:id>', methods=['POST'])
+@app.route('/admin/menu-items/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_menu_item(id):
     item = MenuItem.query.get_or_404(id)
-    item.name = request.form.get('name')
-    item.description = request.form.get('description')
-    item.price = request.form.get('price', type=float)
-    item.category_id = request.form.get('category_id', type=int)
-    item.order = request.form.get('order', type=int)
-    item.is_drink = request.form.get('is_drink') == 'on'
-    item.active = request.form.get('active') == 'on'
     
-    db.session.commit()
-    flash('Gericht wurde aktualisiert')
-    return redirect(url_for('admin_menu_items'))
+    if request.method == 'POST':
+        item.name = request.form.get('name')
+        item.description = request.form.get('description')
+        item.price = request.form.get('price', type=float)
+        item.category_id = request.form.get('category_id', type=int)
+        item.order = request.form.get('order', type=int, default=0)
+        item.is_drink = 'is_drink' in request.form
+        item.active = 'active' in request.form
+        
+        db.session.commit()
+        flash('Gericht wurde erfolgreich aktualisiert', 'success')
+        return redirect(url_for('admin_menu_items'))
+    
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('admin/edit_menu_item.html', item=item, categories=categories)
 
 @app.route('/admin/menu-items/delete/<int:id>', methods=['POST'])
 @login_required
@@ -279,8 +255,30 @@ def delete_menu_item(id):
     item = MenuItem.query.get_or_404(id)
     db.session.delete(item)
     db.session.commit()
-    flash('Gericht wurde gelöscht')
+    flash('Gericht wurde erfolgreich gelöscht', 'success')
     return redirect(url_for('admin_menu_items'))
+
+@app.route('/admin/opening-hours/save', methods=['POST'])
+@login_required
+def save_opening_hours():
+    opening_hours = OpeningHours.query.all()
+    
+    for hour in opening_hours:
+        hour.closed = f'closed_{hour.id}' in request.form
+        if not hour.closed:
+            hour.open_time_1 = request.form.get(f'open_time_1_{hour.id}')
+            hour.close_time_1 = request.form.get(f'close_time_1_{hour.id}')
+            hour.open_time_2 = request.form.get(f'open_time_2_{hour.id}')
+            hour.close_time_2 = request.form.get(f'close_time_2_{hour.id}')
+        else:
+            hour.open_time_1 = None
+            hour.close_time_1 = None
+            hour.open_time_2 = None
+            hour.close_time_2 = None
+    
+    db.session.commit()
+    flash('Öffnungszeiten wurden erfolgreich gespeichert', 'success')
+    return redirect(url_for('admin'))
 
 with app.app_context():
     init_db()
