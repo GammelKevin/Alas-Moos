@@ -86,14 +86,18 @@ def init_db():
     # Erstelle Standardkategorien falls keine vorhanden
     if MenuCategory.query.count() == 0:
         categories = [
-            {'name': 'Vorspeisen', 'order': 1},
-            {'name': 'Hauptgerichte', 'order': 2},
-            {'name': 'Desserts', 'order': 3},
-            {'name': 'Getränke', 'order': 4}
+            {'name': 'vorspeisen', 'display_name': 'Vorspeisen', 'order': 1},
+            {'name': 'hauptgerichte', 'display_name': 'Hauptgerichte', 'order': 2},
+            {'name': 'desserts', 'display_name': 'Desserts', 'order': 3},
+            {'name': 'getraenke', 'display_name': 'Getränke', 'order': 4}
         ]
         
         for cat in categories:
-            category = MenuCategory(name=cat['name'], order=cat['order'])
+            category = MenuCategory(
+                name=cat['name'],
+                display_name=cat['display_name'],
+                order=cat['order']
+            )
             db.session.add(category)
     
     # Erstelle Standardöffnungszeiten falls keine vorhanden

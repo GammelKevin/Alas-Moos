@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
 class MenuCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    display_name = db.Column(db.String(100), nullable=False)
     order = db.Column(db.Integer, default=0)
     items = db.relationship('MenuItem', backref='category', lazy=True)
 
