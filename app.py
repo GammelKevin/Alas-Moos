@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, url_parse
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -72,7 +72,34 @@ def init_db():
         days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
         for day in days:
             if not OpeningHours.query.filter_by(day=day).first():
-                db.session.add(OpeningHours(day=day))
+                hours = OpeningHours(
+                    day=day,
+                    open_time_1='11:30',
+                    close_time_1='14:00',
+                    open_time_2='17:00',
+                    close_time_2='22:00',
+                    closed=True if day == 'Montag' else False
+                )
+                db.session.add(hours)
+        
+        # Initialize menu categories if they don't exist
+        if not MenuCategory.query.first():
+            categories = [
+                ('vorspeisen', 'Vorspeisen', 1, False),
+                ('hauptspeisen', 'Hauptspeisen', 2, False),
+                ('desserts', 'Desserts', 3, False),
+                ('getraenke', 'Getränke', 4, True)
+            ]
+            for name, display_name, order, is_drink in categories:
+                category = MenuCategory(
+                    name=name,
+                    display_name=display_name,
+                    order=order,
+                    is_drink_category=is_drink,
+                    active=True
+                )
+                db.session.add(category)
+        
         db.session.commit()
 
 @app.route('/')
@@ -102,18 +129,20 @@ def menu():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('admin'))
-        
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
         
         if user and check_password_hash(user.password_hash, password):
-            login_user(user)
+            login_user(user, remember=True)
             next_page = request.args.get('next')
-            return redirect(next_page if next_page else url_for('admin'))
-            
+            if not next_page or url_parse(next_page).netloc != '':
+                next_page = url_for('admin')
+            return redirect(next_page)
         flash('Ungültige Anmeldedaten', 'error')
+    
     return render_template('login.html')
 
 @app.route('/logout')
