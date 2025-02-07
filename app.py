@@ -117,12 +117,16 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
         user = Admin.query.filter_by(username=username).first()
         
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            return redirect(url_for('admin.index'))
-        flash('Ungültige Anmeldedaten!', 'error')
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('admin.index'))
+        else:
+            flash('Ungültige Anmeldedaten')
+            return redirect(url_for('login'))
     
     return render_template('login.html')
 

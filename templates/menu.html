@@ -21,9 +21,19 @@
     <div class="menu-content">
         <!-- Quick Navigation -->
         <div class="quick-nav">
-            <button class="nav-btn active" onclick="filterItems('all')">Alle</button>
-            <button class="nav-btn" onclick="filterItems('food')">Speisen</button>
-            <button class="nav-btn" onclick="filterItems('drinks')">Getränke</button>
+            <div class="container">
+                <div class="quick-nav-content">
+                    <button class="quick-nav-btn active" onclick="filterItems('all')">
+                        <span>Alle</span>
+                    </button>
+                    <button class="quick-nav-btn" onclick="filterItems('food')">
+                        <span>Speisen</span>
+                    </button>
+                    <button class="quick-nav-btn" onclick="filterItems('drinks')">
+                        <span>Getränke</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Menu Items Container -->
@@ -242,48 +252,68 @@ body {
 
 /* Quick Navigation */
 .quick-nav {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 30px 0;
     background: #0f0f0f;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 1px solid rgba(225,155,76,0.1);
 }
 
-.nav-btn {
-    background-color: transparent;
-    color: #fff;
+.quick-nav .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.quick-nav-content {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.quick-nav-btn {
+    background: none;
     border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
     font-weight: 500;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
 }
 
-.nav-btn::after {
+.quick-nav-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+.quick-nav-btn::before {
     content: '';
     position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 50%;
-    background-color: #e19b4c;
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-}
-
-.nav-btn:hover::after,
-.nav-btn.active::after {
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background: #e19b4c;
+    border-radius: 4px;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    z-index: 0;
 }
 
-.nav-btn:hover,
-.nav-btn.active {
-    color: #e19b4c;
+.quick-nav-btn:hover::before,
+.quick-nav-btn.active::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.quick-nav-btn:hover,
+.quick-nav-btn.active {
+    color: #0a0a0a;
 }
 
 /* Menu Content */
@@ -406,9 +436,14 @@ body {
         font-size: 1.2em;
     }
 
-    .quick-nav {
+    .quick-nav-content {
+        gap: 1rem;
         flex-wrap: wrap;
-        padding: 15px;
+    }
+
+    .quick-nav-btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
     }
 
     .category-block {
