@@ -1,206 +1,109 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="admin-section">
+<div class="container mt-4">
     <h2>Öffnungszeiten verwalten</h2>
     
-    <form method="POST" action="{{ url_for('admin_opening_hours_save') }}" class="opening-hours-form">
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tag</th>
-                        <th>Öffnungszeit</th>
-                        <th>Schließzeit</th>
-                        <th>Ruhetag</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for hours in opening_hours %}
-                    <tr>
-                        <td>
-                            <div class="weekday">
-                                {{ hours.day }}
-                            </div>
-                        </td>
-                        <td>
-                            <input type="time" 
-                                   name="{{ hours.day|lower }}_open" 
-                                   value="{{ hours.open_time }}"
-                                   {% if hours.closed %}disabled{% endif %}
-                                   class="time-input">
-                        </td>
-                        <td>
-                            <input type="time" 
-                                   name="{{ hours.day|lower }}_close" 
-                                   value="{{ hours.close_time }}"
-                                   {% if hours.closed %}disabled{% endif %}
-                                   class="time-input">
-                        </td>
-                        <td>
-                            <label class="checkbox-container">
-                                <input type="checkbox" 
-                                       name="{{ hours.day|lower }}_closed"
-                                       {% if hours.closed %}checked{% endif %}
-                                       onchange="toggleTimeInputs(this, '{{ hours.day|lower }}')">
-                                <span class="checkmark"></span>
+    <div class="card">
+        <div class="card-body">
+            <form id="opening-hours-form">
+                {% for hours in opening_hours %}
+                <div class="row mb-3 opening-hours-row" data-day="{{ hours.day }}">
+                    <div class="col-md-2">
+                        <label class="form-label">{{ hours.day }}</label>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input closed-checkbox" 
+                                   id="closed_{{ hours.day }}" 
+                                   {% if hours.closed %}checked{% endif %}>
+                            <label class="form-check-label" for="closed_{{ hours.day }}">
+                                Geschlossen
                             </label>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-4 time-inputs" {% if hours.closed %}style="display: none;"{% endif %}>
+                        <div class="input-group">
+                            <input type="time" class="form-control open-time" 
+                                   value="{{ hours.open_time or '' }}"
+                                   {% if hours.closed %}disabled{% endif %}>
+                            <span class="input-group-text">bis</span>
+                            <input type="time" class="form-control close-time" 
+                                   value="{{ hours.close_time or '' }}"
+                                   {% if hours.closed %}disabled{% endif %}>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="row mt-4">
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i>
-                Speichern
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 
-<style>
-.opening-hours-form {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2rem;
-    border-radius: 8px;
-}
-
-.table-container {
-    margin-bottom: 2rem;
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-th {
-    font-weight: 600;
-    color: var(--gold);
-}
-
-.weekday {
-    font-weight: 500;
-}
-
-.time-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    padding: 0.5rem;
-    color: var(--light);
-    width: 150px;
-}
-
-.time-input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.checkbox-container {
-    display: block;
-    position: relative;
-    padding-left: 35px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.checkbox-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-}
-
-.checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.checkbox-container:hover input ~ .checkmark {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.checkbox-container input:checked ~ .checkmark {
-    background-color: var(--gold);
-}
-
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.checkbox-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.checkbox-container .checkmark:after {
-    left: 9px;
-    top: 5px;
-    width: 5px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-primary {
-    background: var(--gold);
-    color: var(--dark);
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-</style>
-
 <script>
-function toggleTimeInputs(checkbox, day) {
-    const openInput = document.querySelector(`input[name="${day}_open"]`);
-    const closeInput = document.querySelector(`input[name="${day}_close"]`);
+document.addEventListener('DOMContentLoaded', function() {
+    // Event-Listener für Geschlossen-Checkboxen
+    document.querySelectorAll('.closed-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const row = this.closest('.opening-hours-row');
+            const timeInputs = row.querySelector('.time-inputs');
+            const inputs = timeInputs.querySelectorAll('input');
+            
+            if (this.checked) {
+                timeInputs.style.display = 'none';
+                inputs.forEach(input => input.disabled = true);
+            } else {
+                timeInputs.style.display = '';
+                inputs.forEach(input => input.disabled = false);
+            }
+        });
+    });
     
-    openInput.disabled = checkbox.checked;
-    closeInput.disabled = checkbox.checked;
-    
-    if (checkbox.checked) {
-        openInput.value = '';
-        closeInput.value = '';
-    }
-}
+    // Formular-Submit-Handler
+    document.getElementById('opening-hours-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const data = [];
+        document.querySelectorAll('.opening-hours-row').forEach(row => {
+            const day = row.dataset.day;
+            const closed = row.querySelector('.closed-checkbox').checked;
+            const openTime = row.querySelector('.open-time').value;
+            const closeTime = row.querySelector('.close-time').value;
+            
+            data.push({
+                day: day,
+                closed: closed,
+                openTime: closed ? null : openTime,
+                closeTime: closed ? null : closeTime
+            });
+        });
+        
+        fetch('/admin/opening-hours/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Öffnungszeiten wurden erfolgreich gespeichert!');
+            } else {
+                alert('Fehler beim Speichern der Öffnungszeiten: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
+        });
+    });
+});
 </script>
 {% endblock %}
