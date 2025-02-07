@@ -125,6 +125,57 @@ def admin_menu():
     menu_items = MenuItem.query.all()
     return render_template('admin/menu.html', categories=categories, menu_items=menu_items)
 
+@app.route('/admin/categories')
+@login_required
+def admin_categories():
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('admin/categories.html', categories=categories)
+
+@app.route('/admin/categories/add', methods=['POST'])
+@login_required
+def admin_add_category():
+    try:
+        display_name = request.form.get('display_name')
+        is_drink = bool(request.form.get('is_drink_category'))
+        
+        # Generiere einen URL-freundlichen Namen
+        name = display_name.lower().replace(' ', '-')
+        
+        # Bestimme die höchste vorhandene Reihenfolge
+        max_order = db.session.query(db.func.max(MenuCategory.order)).scalar() or 0
+        
+        category = MenuCategory(
+            name=name,
+            display_name=display_name,
+            order=max_order + 1,
+            is_drink_category=is_drink
+        )
+        
+        db.session.add(category)
+        db.session.commit()
+        flash('Kategorie erfolgreich hinzugefügt')
+    except Exception as e:
+        flash(f'Fehler beim Hinzufügen der Kategorie: {str(e)}')
+    
+    return redirect(url_for('admin_categories'))
+
+@app.route('/admin/categories/delete/<int:id>', methods=['POST'])
+@login_required
+def admin_delete_category(id):
+    try:
+        category = MenuCategory.query.get_or_404(id)
+        
+        # Lösche alle Menüeinträge in dieser Kategorie
+        MenuItem.query.filter_by(category_id=id).delete()
+        
+        db.session.delete(category)
+        db.session.commit()
+        flash('Kategorie und zugehörige Menüeinträge erfolgreich gelöscht')
+    except Exception as e:
+        flash(f'Fehler beim Löschen der Kategorie: {str(e)}')
+    
+    return redirect(url_for('admin_categories'))
+
 @app.route('/admin/menu/add', methods=['POST'])
 @login_required
 def admin_menu_add():
@@ -223,29 +274,25 @@ def admin_hours():
             (OpeningHours.day == 'Sonntag', 7)
         )
     ).all()
-    return render_template('admin/opening_hours.html', opening_hours=opening_hours)
+    return render_template('admin/hours.html', opening_hours=opening_hours)
 
-@app.route('/admin/hours/update', methods=['POST'])
+@app.route('/admin/hours/save', methods=['POST'])
 @login_required
-def admin_hours_update():
+def admin_save_hours():
     try:
-        for day in ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']:
-            hours = OpeningHours.query.filter_by(day=day).first()
-            if not hours:
-                hours = OpeningHours(day=day)
-                db.session.add(hours)
-            
-            closed = request.form.get(f'{day}_closed') == 'on'
-            hours.closed = closed
-            
-            if not closed:
-                hours.open_time = request.form.get(f'{day}_open')
-                hours.close_time = request.form.get(f'{day}_close')
+        for hour in OpeningHours.query.all():
+            hour.closed = bool(request.form.get(f'closed_{hour.id}'))
+            if not hour.closed:
+                hour.open_time = request.form.get(f'open_time_{hour.id}')
+                hour.close_time = request.form.get(f'close_time_{hour.id}')
+            else:
+                hour.open_time = None
+                hour.close_time = None
         
         db.session.commit()
         flash('Öffnungszeiten erfolgreich aktualisiert')
     except Exception as e:
-        flash(f'Fehler beim Aktualisieren der Öffnungszeiten: {str(e)}')
+        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}')
     
     return redirect(url_for('admin_hours'))
 

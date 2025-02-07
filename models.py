@@ -20,6 +20,7 @@ class MenuCategory(db.Model):
     name = db.Column(db.String(100), nullable=False)
     display_name = db.Column(db.String(100), nullable=False)
     order = db.Column(db.Integer, default=0)
+    is_drink_category = db.Column(db.Boolean, default=False)
     items = db.relationship('MenuItem', backref='category', lazy=True)
 
 class MenuItem(db.Model):
