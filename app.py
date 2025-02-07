@@ -107,15 +107,15 @@ def login():
         
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('admin'))
+            return redirect(url_for('admin_dashboard'))
         else:
             flash('Ungültige Anmeldedaten')
     
     return render_template('login.html')
 
-@app.route('/admin')
+@app.route('/admin/dashboard')
 @login_required
-def admin():
+def admin_dashboard():
     return render_template('admin/index.html')
 
 @app.route('/admin/menu')
@@ -124,6 +124,100 @@ def admin_menu():
     categories = MenuCategory.query.order_by(MenuCategory.order).all()
     menu_items = MenuItem.query.all()
     return render_template('admin/menu.html', categories=categories, menu_items=menu_items)
+
+@app.route('/admin/menu/add', methods=['POST'])
+@login_required
+def admin_menu_add():
+    try:
+        name = request.form.get('name')
+        description = request.form.get('description')
+        price = float(request.form.get('price'))
+        category_id = int(request.form.get('category'))
+        vegetarian = bool(request.form.get('vegetarian'))
+        vegan = bool(request.form.get('vegan'))
+        spicy = bool(request.form.get('spicy'))
+        
+        image = request.files.get('image')
+        image_path = None
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            image_path = os.path.join('uploads', filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        menu_item = MenuItem(
+            name=name,
+            description=description,
+            price=price,
+            category_id=category_id,
+            vegetarian=vegetarian,
+            vegan=vegan,
+            spicy=spicy,
+            image_path=image_path
+        )
+        
+        db.session.add(menu_item)
+        db.session.commit()
+        
+        flash('Menüpunkt erfolgreich hinzugefügt')
+    except Exception as e:
+        flash(f'Fehler beim Hinzufügen des Menüpunkts: {str(e)}')
+    
+    return redirect(url_for('admin_menu'))
+
+@app.route('/admin/menu/edit/<int:id>', methods=['POST'])
+@login_required
+def admin_menu_edit(id):
+    try:
+        menu_item = MenuItem.query.get_or_404(id)
+        
+        menu_item.name = request.form.get('name')
+        menu_item.description = request.form.get('description')
+        menu_item.price = float(request.form.get('price'))
+        menu_item.category_id = int(request.form.get('category'))
+        menu_item.vegetarian = bool(request.form.get('vegetarian'))
+        menu_item.vegan = bool(request.form.get('vegan'))
+        menu_item.spicy = bool(request.form.get('spicy'))
+        
+        image = request.files.get('image')
+        if image and image.filename:
+            # Altes Bild löschen
+            if menu_item.image_path:
+                old_image_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(menu_item.image_path))
+                if os.path.exists(old_image_path):
+                    os.remove(old_image_path)
+            
+            # Neues Bild speichern
+            filename = secure_filename(image.filename)
+            image_path = os.path.join('uploads', filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            menu_item.image_path = image_path
+        
+        db.session.commit()
+        flash('Menüpunkt erfolgreich aktualisiert')
+    except Exception as e:
+        flash(f'Fehler beim Aktualisieren des Menüpunkts: {str(e)}')
+    
+    return redirect(url_for('admin_menu'))
+
+@app.route('/admin/menu/delete/<int:id>')
+@login_required
+def admin_menu_delete(id):
+    try:
+        menu_item = MenuItem.query.get_or_404(id)
+        
+        # Bild löschen wenn vorhanden
+        if menu_item.image_path:
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(menu_item.image_path))
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        
+        db.session.delete(menu_item)
+        db.session.commit()
+        flash('Menüpunkt erfolgreich gelöscht')
+    except Exception as e:
+        flash(f'Fehler beim Löschen des Menüpunkts: {str(e)}')
+    
+    return redirect(url_for('admin_menu'))
 
 @app.route('/admin/categories')
 @login_required
@@ -175,90 +269,6 @@ def admin_delete_category(id):
         flash(f'Fehler beim Löschen der Kategorie: {str(e)}')
     
     return redirect(url_for('admin_categories'))
-
-@app.route('/admin/menu/add', methods=['POST'])
-@login_required
-def admin_menu_add():
-    try:
-        name = request.form.get('name')
-        description = request.form.get('description')
-        price = float(request.form.get('price'))
-        category_id = int(request.form.get('category'))
-        vegetarian = bool(request.form.get('vegetarian'))
-        vegan = bool(request.form.get('vegan'))
-        spicy = bool(request.form.get('spicy'))
-        
-        image = request.files.get('image')
-        image_path = None
-        if image and image.filename:
-            filename = secure_filename(image.filename)
-            image_path = os.path.join('uploads', filename)
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        
-        menu_item = MenuItem(
-            name=name,
-            description=description,
-            price=price,
-            category_id=category_id,
-            vegetarian=vegetarian,
-            vegan=vegan,
-            spicy=spicy,
-            image_path=image_path
-        )
-        
-        db.session.add(menu_item)
-        db.session.commit()
-        
-        flash('Menüpunkt erfolgreich hinzugefügt')
-    except Exception as e:
-        flash(f'Fehler beim Hinzufügen des Menüpunkts: {str(e)}')
-    
-    return redirect(url_for('admin_menu'))
-
-@app.route('/admin/menu/edit/<int:id>', methods=['POST'])
-@login_required
-def admin_menu_edit(id):
-    try:
-        menu_item = MenuItem.query.get_or_404(id)
-        menu_item.name = request.form.get('name')
-        menu_item.description = request.form.get('description')
-        menu_item.price = float(request.form.get('price'))
-        menu_item.category_id = int(request.form.get('category'))
-        menu_item.vegetarian = bool(request.form.get('vegetarian'))
-        menu_item.vegan = bool(request.form.get('vegan'))
-        menu_item.spicy = bool(request.form.get('spicy'))
-        
-        image = request.files.get('image')
-        if image and image.filename:
-            filename = secure_filename(image.filename)
-            image_path = os.path.join('uploads', filename)
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            menu_item.image_path = image_path
-        
-        db.session.commit()
-        flash('Menüpunkt erfolgreich aktualisiert')
-    except Exception as e:
-        flash(f'Fehler beim Aktualisieren des Menüpunkts: {str(e)}')
-    
-    return redirect(url_for('admin_menu'))
-
-@app.route('/admin/menu/delete/<int:id>')
-@login_required
-def admin_menu_delete(id):
-    try:
-        menu_item = MenuItem.query.get_or_404(id)
-        if menu_item.image_path:
-            try:
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(menu_item.image_path)))
-            except:
-                pass
-        db.session.delete(menu_item)
-        db.session.commit()
-        flash('Menüpunkt erfolgreich gelöscht')
-    except Exception as e:
-        flash(f'Fehler beim Löschen des Menüpunkts: {str(e)}')
-    
-    return redirect(url_for('admin_menu'))
 
 @app.route('/admin/hours')
 @login_required

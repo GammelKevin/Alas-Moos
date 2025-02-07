@@ -3,8 +3,8 @@
 {% block content %}
 <div class="menu-admin">
     <div class="add-item-section">
-        <h2>Neues Item hinzufügen</h2>
-        <form action="{{ url_for('admin.add_menu_item') }}" method="POST" class="add-form">
+        <h2>Neuen Menüpunkt hinzufügen</h2>
+        <form action="{{ url_for('admin_menu_add') }}" method="POST" enctype="multipart/form-data" class="add-form">
             <div class="form-row">
                 <div class="form-group">
                     <label for="name">Name*</label>
@@ -17,37 +17,39 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="category_id">Kategorie*</label>
-                    <select id="category_id" name="category_id" required class="form-control">
-                        <optgroup label="Speisen">
-                            {% for category in categories %}
-                                {% if not category.is_drink_category %}
-                                    <option value="{{ category.id }}">{{ category.display_name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="Getränke">
-                            {% for category in categories %}
-                                {% if category.is_drink_category %}
-                                    <option value="{{ category.id }}">{{ category.display_name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup>
+                    <label for="category">Kategorie*</label>
+                    <select id="category" name="category" required class="form-control">
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.display_name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group full-width">
-                    <label for="description">Beschreibung</label>
-                    <textarea id="description" name="description" class="form-control"></textarea>
-                </div>
+            <div class="form-group">
+                <label for="description">Beschreibung</label>
+                <textarea id="description" name="description" class="form-control"></textarea>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="unit">Einheit (z.B. "0,5l" für Getränke)</label>
-                    <input type="text" id="unit" name="unit" class="form-control">
+                    <label for="image">Bild</label>
+                    <input type="file" id="image" name="image" accept="image/*" class="form-control-file">
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <div class="form-check">
+                        <input type="checkbox" id="vegetarian" name="vegetarian" class="form-check-input">
+                        <label for="vegetarian" class="form-check-label">Vegetarisch</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="vegan" name="vegan" class="form-check-input">
+                        <label for="vegan" class="form-check-label">Vegan</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="spicy" name="spicy" class="form-check-input">
+                        <label for="spicy" class="form-check-label">Scharf</label>
+                    </div>
                 </div>
             </div>
 
@@ -57,12 +59,66 @@
         </form>
     </div>
 
-    <!-- Speisen -->
-    <div class="items-section">
-        <h2>Speisen</h2>
+    <div class="menu-items-section">
+        <h2>Menüpunkte verwalten</h2>
+        
         {% for category in categories %}
             {% if not category.is_drink_category %}
-                <div class="category-section">
+                <div class="category-group">
+                    <h3>{{ category.display_name }}</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Beschreibung</th>
+                                    <th>Preis</th>
+                                    <th>Eigenschaften</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in menu_items %}
+                                    {% if item.category_id == category.id %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.description }}</td>
+                                            <td>{{ "%.2f"|format(item.price) }} €</td>
+                                            <td class="properties">
+                                                {% if item.vegetarian %}
+                                                    <span class="badge badge-success">Vegetarisch</span>
+                                                {% endif %}
+                                                {% if item.vegan %}
+                                                    <span class="badge badge-success">Vegan</span>
+                                                {% endif %}
+                                                {% if item.spicy %}
+                                                    <span class="badge badge-danger">Scharf</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary btn-sm" onclick="editItem({{ item.id }})">
+                                                    Bearbeiten
+                                                </button>
+                                                <a href="{{ url_for('admin_menu_delete', id=item.id) }}" 
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('Wirklich löschen?')">
+                                                    Löschen
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Getränke -->
+        {% for category in categories %}
+            {% if category.is_drink_category %}
+                <div class="category-group">
                     <h3>{{ category.display_name }}</h3>
                     <div class="table-responsive">
                         <table>
@@ -75,16 +131,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in food_items %}
+                                {% for item in menu_items %}
                                     {% if item.category_id == category.id %}
                                         <tr>
                                             <td>{{ item.name }}</td>
                                             <td>{{ item.description }}</td>
                                             <td>{{ "%.2f"|format(item.price) }} €</td>
                                             <td>
-                                                <form action="{{ url_for('admin.delete_menu_item', id=item.id) }}" method="POST" style="display: inline;">
-                                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Wirklich löschen?')">Löschen</button>
-                                                </form>
+                                                <button class="btn btn-primary btn-sm" onclick="editItem({{ item.id }})">
+                                                    Bearbeiten
+                                                </button>
+                                                <a href="{{ url_for('admin_menu_delete', id=item.id) }}" 
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('Wirklich löschen?')">
+                                                    Löschen
+                                                </a>
                                             </td>
                                         </tr>
                                     {% endif %}
@@ -96,45 +157,66 @@
             {% endif %}
         {% endfor %}
     </div>
+</div>
 
-    <!-- Getränke -->
-    <div class="items-section">
-        <h2>Getränke</h2>
-        {% for category in categories %}
-            {% if category.is_drink_category %}
-                <div class="category-section">
-                    <h3>{{ category.display_name }}</h3>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Menge</th>
-                                    <th>Preis</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in drink_items %}
-                                    {% if item.category_id == category.id %}
-                                        <tr>
-                                            <td>{{ item.name }}</td>
-                                            <td>{{ item.unit }}</td>
-                                            <td>{{ "%.2f"|format(item.price) }} €</td>
-                                            <td>
-                                                <form action="{{ url_for('admin.delete_menu_item', id=item.id) }}" method="POST" style="display: inline;">
-                                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Wirklich löschen?')">Löschen</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Menüpunkt bearbeiten</h2>
+        <form id="editForm" method="POST" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-name">Name*</label>
+                    <input type="text" id="edit-name" name="name" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-price">Preis (€)*</label>
+                    <input type="number" id="edit-price" name="price" step="0.10" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-category">Kategorie*</label>
+                    <select id="edit-category" name="category" required class="form-control">
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.display_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-description">Beschreibung</label>
+                <textarea id="edit-description" name="description" class="form-control"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-image">Neues Bild</label>
+                    <input type="file" id="edit-image" name="image" accept="image/*" class="form-control-file">
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <div class="form-check">
+                        <input type="checkbox" id="edit-vegetarian" name="vegetarian" class="form-check-input">
+                        <label for="edit-vegetarian" class="form-check-label">Vegetarisch</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="edit-vegan" name="vegan" class="form-check-input">
+                        <label for="edit-vegan" class="form-check-label">Vegan</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="edit-spicy" name="spicy" class="form-check-input">
+                        <label for="edit-spicy" class="form-check-label">Scharf</label>
                     </div>
                 </div>
-            {% endif %}
-        {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Speichern</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -168,8 +250,34 @@
     margin-bottom: 15px;
 }
 
-.form-group.full-width {
-    grid-column: 1 / -1;
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 32px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.form-check-label {
+    margin: 0;
+    cursor: pointer;
 }
 
 .form-control {
@@ -187,8 +295,12 @@
 }
 
 textarea.form-control {
-    height: 100px;
+    min-height: 100px;
     resize: vertical;
+}
+
+.form-control-file {
+    padding: 10px 0;
 }
 
 .form-actions {
@@ -196,26 +308,25 @@ textarea.form-control {
     text-align: right;
 }
 
-.items-section {
+.menu-items-section {
     background: #fff;
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 40px;
 }
 
-.items-section h2 {
+.menu-items-section h2 {
     color: #333;
     margin-bottom: 30px;
     font-size: 1.8em;
     text-align: center;
 }
 
-.category-section {
-    margin-bottom: 30px;
+.category-group {
+    margin-bottom: 40px;
 }
 
-.category-section h3 {
+.category-group h3 {
     color: #c17817;
     margin-bottom: 20px;
     padding-bottom: 10px;
@@ -253,6 +364,29 @@ tr:hover {
     background-color: #f8f9fa;
 }
 
+.properties {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
 .btn {
     padding: 8px 16px;
     border: none;
@@ -260,6 +394,11 @@ tr:hover {
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
 }
 
 .btn-primary {
@@ -280,6 +419,44 @@ tr:hover {
     background-color: #c82333;
 }
 
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #333;
+}
+
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
@@ -293,6 +470,54 @@ tr:hover {
     td, th {
         padding: 8px;
     }
+
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+        padding: 20px;
+    }
 }
 </style>
+
+<script>
+// Modal Funktionalität
+const modal = document.getElementById('editModal');
+const span = document.getElementsByClassName('close')[0];
+const editForm = document.getElementById('editForm');
+
+span.onclick = function() {
+    modal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function editItem(itemId) {
+    // Hier AJAX-Request für Item-Daten
+    // Beispiel:
+    /*
+    fetch('/admin/menu/item/' + itemId)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit-name').value = data.name;
+            document.getElementById('edit-price').value = data.price;
+            document.getElementById('edit-category').value = data.category_id;
+            document.getElementById('edit-description').value = data.description;
+            document.getElementById('edit-vegetarian').checked = data.vegetarian;
+            document.getElementById('edit-vegan').checked = data.vegan;
+            document.getElementById('edit-spicy').checked = data.spicy;
+            
+            editForm.action = '/admin/menu/edit/' + itemId;
+            modal.style.display = 'block';
+        });
+    */
+    
+    // Temporäre Lösung: Formular-Action setzen und Modal öffnen
+    editForm.action = "{{ url_for('admin_menu_edit', id=0) }}".replace('0', itemId);
+    modal.style.display = 'block';
+}
+</script>
 {% endblock %}
