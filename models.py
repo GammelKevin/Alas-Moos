@@ -16,11 +16,12 @@ class User(UserMixin, db.Model):
 class OpeningHours(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(20), nullable=False)
-    open_time_1 = db.Column(db.String(5))
-    close_time_1 = db.Column(db.String(5))
-    open_time_2 = db.Column(db.String(5))
-    close_time_2 = db.Column(db.String(5))
+    open_time = db.Column(db.String(5))
+    close_time = db.Column(db.String(5))
     closed = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f'<OpeningHours {self.day}>'
 
 class MenuCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)

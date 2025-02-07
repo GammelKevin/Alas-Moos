@@ -36,10 +36,8 @@ class User(UserMixin, db.Model):
 class OpeningHours(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(20), nullable=False)
-    open_time_1 = db.Column(db.String(5))
-    close_time_1 = db.Column(db.String(5))
-    open_time_2 = db.Column(db.String(5))
-    close_time_2 = db.Column(db.String(5))
+    open_time = db.Column(db.String(5))
+    close_time = db.Column(db.String(5))
     closed = db.Column(db.Boolean, default=False)
 
 class MenuCategory(db.Model):
@@ -71,55 +69,55 @@ class MenuItem(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-def init_admin_user():
-    # Create admin user if it doesn't exist
-    admin_user = User.query.filter_by(username='admin').first()
-    if not admin_user:
-        admin_user = User(
-            username='admin',
-            password_hash=generate_password_hash('admin')  # Change this password in production!
-        )
-        db.session.add(admin_user)
-        db.session.commit()
-
 def init_db():
-    with app.app_context():
-        db.create_all()
-        init_admin_user()
+    db.create_all()
+    
+    # Admin User erstellen
+    if not User.query.filter_by(username='admin').first():
+        admin = User(username='admin')
+        admin.password_hash = generate_password_hash('admin')
+        db.session.add(admin)
+    
+    # Standard-Kategorien erstellen
+    if not MenuCategory.query.first():
+        categories = [
+            {'name': 'vorspeisen', 'display_name': 'Vorspeisen', 'order': 1},
+            {'name': 'hauptspeisen', 'display_name': 'Hauptspeisen', 'order': 2},
+            {'name': 'desserts', 'display_name': 'Desserts', 'order': 3},
+            {'name': 'getraenke', 'display_name': 'Getränke', 'order': 4, 'is_drink_category': True}
+        ]
         
-        # Initialize opening hours if not exists
-        days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-        for day in days:
-            if not OpeningHours.query.filter_by(day=day).first():
-                hours = OpeningHours(
-                    day=day,
-                    open_time_1='11:30',
-                    close_time_1='14:00',
-                    open_time_2='17:00',
-                    close_time_2='22:00',
-                    closed=True if day == 'Montag' else False
-                )
-                db.session.add(hours)
+        for cat in categories:
+            category = MenuCategory(
+                name=cat['name'],
+                display_name=cat['display_name'],
+                order=cat['order'],
+                is_drink_category=cat.get('is_drink_category', False)
+            )
+            db.session.add(category)
+    
+    # Standard-Öffnungszeiten erstellen
+    if not OpeningHours.query.first():
+        default_hours = [
+            {'day': 'Montag', 'closed': True},
+            {'day': 'Dienstag', 'open_time': '11:30', 'close_time': '14:30'},
+            {'day': 'Mittwoch', 'open_time': '11:30', 'close_time': '14:30'},
+            {'day': 'Donnerstag', 'open_time': '11:30', 'close_time': '14:30'},
+            {'day': 'Freitag', 'open_time': '11:30', 'close_time': '14:30'},
+            {'day': 'Samstag', 'open_time': '17:00', 'close_time': '22:00'},
+            {'day': 'Sonntag', 'open_time': '11:30', 'close_time': '14:30'}
+        ]
         
-        # Initialize menu categories if they don't exist
-        if not MenuCategory.query.first():
-            categories = [
-                ('vorspeisen', 'Vorspeisen', 1, False),
-                ('hauptspeisen', 'Hauptspeisen', 2, False),
-                ('desserts', 'Desserts', 3, False),
-                ('getraenke', 'Getränke', 4, True)
-            ]
-            for name, display_name, order, is_drink in categories:
-                category = MenuCategory(
-                    name=name,
-                    display_name=display_name,
-                    order=order,
-                    is_drink_category=is_drink,
-                    active=True
-                )
-                db.session.add(category)
-        
-        db.session.commit()
+        for hours in default_hours:
+            opening_hours = OpeningHours(
+                day=hours['day'],
+                open_time=hours.get('open_time'),
+                close_time=hours.get('close_time'),
+                closed=hours.get('closed', False)
+            )
+            db.session.add(opening_hours)
+    
+    db.session.commit()
 
 @app.route('/')
 def home():
@@ -173,14 +171,7 @@ def logout():
 @app.route('/admin')
 @login_required
 def admin():
-    opening_hours = OpeningHours.query.order_by(OpeningHours.id).all()
-    return render_template('admin/index.html', opening_hours=opening_hours)
-
-@app.route('/admin/menu-categories')
-@login_required
-def admin_menu_categories():
-    categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    return render_template('admin/menu_categories.html', categories=categories)
+    return render_template('admin/dashboard.html')
 
 @app.route('/admin/menu-items')
 @login_required
@@ -192,8 +183,6 @@ def admin_menu_items():
 @app.route('/admin/menu-items/add', methods=['GET', 'POST'])
 @login_required
 def add_menu_item():
-    categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    
     if request.method == 'POST':
         try:
             # Bildupload
@@ -210,7 +199,7 @@ def add_menu_item():
                 description=request.form.get('description'),
                 price=float(request.form.get('price')),
                 category_id=int(request.form.get('category_id')),
-                order=int(request.form.get('order')),
+                order=int(request.form.get('order', 0)),
                 active=bool(request.form.get('active')),
                 image_path=image_path,
                 is_lunch_special=bool(request.form.get('is_lunch_special')),
@@ -228,7 +217,9 @@ def add_menu_item():
         except Exception as e:
             db.session.rollback()
             flash(f'Fehler beim Hinzufügen des Gerichts: {str(e)}', 'error')
+            return redirect(url_for('add_menu_item'))
     
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
     return render_template('admin/add_menu_item.html', categories=categories)
 
 @app.route('/admin/menu-items/edit/<int:item_id>', methods=['GET', 'POST'])
@@ -257,7 +248,7 @@ def edit_menu_item(item_id):
             item.description = request.form.get('description')
             item.price = float(request.form.get('price'))
             item.category_id = int(request.form.get('category_id'))
-            item.order = int(request.form.get('order'))
+            item.order = int(request.form.get('order', 0))
             item.active = bool(request.form.get('active'))
             item.is_lunch_special = bool(request.form.get('is_lunch_special'))
             item.allergens = request.form.get('allergens')
@@ -272,91 +263,146 @@ def edit_menu_item(item_id):
         except Exception as e:
             db.session.rollback()
             flash(f'Fehler beim Aktualisieren des Gerichts: {str(e)}', 'error')
+            return redirect(url_for('edit_menu_item', item_id=item_id))
     
     return render_template('admin/edit_menu_item.html', item=item, categories=categories)
-
-@app.route('/admin/menu-categories/add', methods=['POST'])
-@login_required
-def add_menu_category():
-    name = request.form.get('name')
-    display_name = request.form.get('display_name')
-    order = request.form.get('order', type=int, default=0)
-    is_drink_category = 'is_drink_category' in request.form
-    
-    category = MenuCategory(
-        name=name,
-        display_name=display_name,
-        order=order,
-        is_drink_category=is_drink_category,
-        active=True
-    )
-    
-    db.session.add(category)
-    db.session.commit()
-    
-    flash('Kategorie wurde erfolgreich hinzugefügt', 'success')
-    return redirect(url_for('admin_menu_categories'))
-
-@app.route('/admin/menu-categories/edit/<int:id>', methods=['GET', 'POST'])
-@login_required
-def edit_menu_category(id):
-    category = MenuCategory.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        category.name = request.form.get('name')
-        category.display_name = request.form.get('display_name')
-        category.order = request.form.get('order', type=int, default=0)
-        category.is_drink_category = 'is_drink_category' in request.form
-        category.active = 'active' in request.form
-        
-        db.session.commit()
-        flash('Kategorie wurde erfolgreich aktualisiert', 'success')
-        return redirect(url_for('admin_menu_categories'))
-    
-    return render_template('admin/edit_menu_category.html', category=category)
-
-@app.route('/admin/menu-categories/delete/<int:id>', methods=['POST'])
-@login_required
-def delete_menu_category(id):
-    category = MenuCategory.query.get_or_404(id)
-    db.session.delete(category)
-    db.session.commit()
-    flash('Kategorie wurde erfolgreich gelöscht', 'success')
-    return redirect(url_for('admin_menu_categories'))
 
 @app.route('/admin/menu-items/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_menu_item(id):
     item = MenuItem.query.get_or_404(id)
-    db.session.delete(item)
-    db.session.commit()
-    flash('Gericht wurde erfolgreich gelöscht', 'success')
+    try:
+        # Lösche das Bild, falls vorhanden
+        if item.image_path:
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], item.image_path.split('/')[-1])
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        
+        db.session.delete(item)
+        db.session.commit()
+        flash('Gericht wurde erfolgreich gelöscht', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Fehler beim Löschen des Gerichts: {str(e)}', 'error')
+    
     return redirect(url_for('admin_menu_items'))
+
+@app.route('/admin/menu-categories', methods=['GET'])
+@login_required
+def admin_menu_categories():
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('admin/menu_categories.html', categories=categories)
+
+@app.route('/admin/menu-categories/add', methods=['POST'])
+@login_required
+def add_menu_category():
+    try:
+        new_category = MenuCategory(
+            name=request.form.get('name'),
+            display_name=request.form.get('display_name'),
+            order=int(request.form.get('order', 0))
+        )
+        db.session.add(new_category)
+        db.session.commit()
+        flash('Neue Kategorie wurde erfolgreich hinzugefügt', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Fehler beim Hinzufügen der Kategorie: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_menu_categories'))
+
+@app.route('/admin/menu-categories/edit/<int:id>', methods=['POST'])
+@login_required
+def edit_menu_category(id):
+    category = MenuCategory.query.get_or_404(id)
+    try:
+        category.name = request.form.get('name')
+        category.display_name = request.form.get('display_name')
+        category.order = int(request.form.get('order', 0))
+        db.session.commit()
+        flash('Kategorie wurde erfolgreich aktualisiert', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Fehler beim Aktualisieren der Kategorie: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_menu_categories'))
+
+@app.route('/admin/menu-categories/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_menu_category(id):
+    category = MenuCategory.query.get_or_404(id)
+    try:
+        if MenuItem.query.filter_by(category_id=id).first():
+            flash('Diese Kategorie enthält noch Gerichte und kann nicht gelöscht werden', 'error')
+        else:
+            db.session.delete(category)
+            db.session.commit()
+            flash('Kategorie wurde erfolgreich gelöscht', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Fehler beim Löschen der Kategorie: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_menu_categories'))
+
+@app.route('/admin/opening-hours', methods=['GET'])
+@login_required
+def admin_opening_hours():
+    opening_hours = OpeningHours.query.order_by(
+        db.case(
+            {
+                'Montag': 1,
+                'Dienstag': 2,
+                'Mittwoch': 3,
+                'Donnerstag': 4,
+                'Freitag': 5,
+                'Samstag': 6,
+                'Sonntag': 7
+            },
+            value=OpeningHours.day
+        )
+    ).all()
+    return render_template('admin/opening_hours.html', opening_hours=opening_hours)
 
 @app.route('/admin/opening-hours/save', methods=['POST'])
 @login_required
 def save_opening_hours():
-    opening_hours = OpeningHours.query.all()
+    try:
+        days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+        
+        for day in days:
+            hours = OpeningHours.query.filter_by(day=day).first()
+            if not hours:
+                hours = OpeningHours(day=day)
+                db.session.add(hours)
+            
+            day_key = day.lower()
+            hours.closed = request.form.get(f'{day_key}_closed') is not None
+            
+            if not hours.closed:
+                open_time = request.form.get(f'{day_key}_open')
+                close_time = request.form.get(f'{day_key}_close')
+                
+                if not open_time or not close_time:
+                    flash(f'Bitte geben Sie gültige Öffnungszeiten für {day} ein.', 'error')
+                    return redirect(url_for('admin_opening_hours'))
+                
+                hours.open_time = open_time
+                hours.close_time = close_time
+            else:
+                hours.open_time = None
+                hours.close_time = None
+        
+        db.session.commit()
+        flash('Öffnungszeiten wurden erfolgreich gespeichert.', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}', 'error')
     
-    for hour in opening_hours:
-        hour.closed = f'closed_{hour.id}' in request.form
-        if not hour.closed:
-            hour.open_time_1 = request.form.get(f'open_time_1_{hour.id}')
-            hour.close_time_1 = request.form.get(f'close_time_1_{hour.id}')
-            hour.open_time_2 = request.form.get(f'open_time_2_{hour.id}')
-            hour.close_time_2 = request.form.get(f'close_time_2_{hour.id}')
-        else:
-            hour.open_time_1 = None
-            hour.close_time_1 = None
-            hour.open_time_2 = None
-            hour.close_time_2 = None
-    
-    db.session.commit()
-    flash('Öffnungszeiten wurden erfolgreich gespeichert', 'success')
-    return redirect(url_for('admin'))
+    return redirect(url_for('admin_opening_hours'))
 
 with app.app_context():
     init_db()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
