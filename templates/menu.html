@@ -105,6 +105,35 @@
     </div>
 </div>
 
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h3>Kontakt</h3>
+            <p>Telefon: <a href="tel:+498441497797">08441 497797</a></p>
+            <p>Email: <a href="mailto:info@alas-moos.de">info@alas-moos.de</a></p>
+        </div>
+        
+        <div class="footer-section">
+            <h3>Adresse</h3>
+            <p>Alas</p>
+            <p>Münchener Str. 127</p>
+            <p>85051 Ingolstadt</p>
+        </div>
+        
+        <div class="footer-section">
+            <h3>Folgen Sie uns</h3>
+            <div class="social-links">
+                <a href="https://www.facebook.com/profile.php?id=100063556361475" target="_blank" class="social-link">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2024 Alas. Alle Rechte vorbehalten.</p>
+    </div>
+</footer>
+
 <!-- Font Awesome für Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -289,6 +318,10 @@ body {
     color: #e19b4c;
 }
 
+.quick-nav-btn.active {
+    color: #e19b4c;
+}
+
 .quick-nav-btn::after {
     content: '';
     position: absolute;
@@ -301,13 +334,13 @@ body {
     transform: translateX(-50%);
 }
 
-.quick-nav-btn:hover::after,
-.quick-nav-btn.active::after {
+.quick-nav-btn:hover::after {
     width: 100%;
 }
 
-.quick-nav-btn.active {
-    color: #e19b4c;
+.quick-nav-btn.active::after {
+    width: 100%;
+    opacity: 0.5;
 }
 
 /* Menu Content */
@@ -466,6 +499,44 @@ body {
 
 .hidden {
     display: none;
+}
+
+/* Footer Styles */
+.footer {
+    background-color: #0f0f0f;
+    padding: 20px;
+    color: #fff;
+    text-align: center;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-section h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.footer-bottom {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(225,155,76,0.1);
+}
+
+.footer-bottom p {
+    font-size: 0.9em;
+    color: #999;
 }
 </style>
 

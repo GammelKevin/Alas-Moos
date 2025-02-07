@@ -86,27 +86,16 @@ def opening_hours():
 @login_required
 def update_opening_hours():
     try:
-        closed_days = request.form.getlist('closed')
-        
         for hour in OpeningHours.query.all():
-            hour.closed = str(hour.id) in closed_days
-            
+            hour.closed = str(hour.id) in request.form.getlist('closed')
             if not hour.closed:
-                open_time = request.form.get(f'open_time_{hour.id}')
-                close_time = request.form.get(f'close_time_{hour.id}')
-                
-                if not open_time or not close_time:
-                    raise ValueError(f'Bitte geben Sie gültige Öffnungszeiten für {hour.day_display} ein')
-                
-                hour.open_time = open_time
-                hour.close_time = close_time
-        
+                hour.open_time_1 = request.form.get(f'open_time_1_{hour.id}')
+                hour.close_time_1 = request.form.get(f'close_time_1_{hour.id}')
+                hour.open_time_2 = request.form.get(f'open_time_2_{hour.id}')
+                hour.close_time_2 = request.form.get(f'close_time_2_{hour.id}')
         db.session.commit()
         flash('Öffnungszeiten erfolgreich aktualisiert!', 'success')
-    except ValueError as e:
-        db.session.rollback()
-        flash(str(e), 'error')
     except Exception as e:
         db.session.rollback()
-        flash('Ein unerwarteter Fehler ist aufgetreten.', 'error')
-    return redirect(url_for('admin.opening_hours'))
+        flash(f'Fehler beim Speichern: {str(e)}', 'error')
+    return redirect(url_for('admin.index'))

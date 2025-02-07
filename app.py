@@ -26,69 +26,71 @@ def load_user(user_id):
 
 def init_db():
     with app.app_context():
+        # Drop all tables and recreate them
+        db.drop_all()
         db.create_all()
+
+        # Admin-Benutzer erstellen
+        admin = Admin(username='admin')
+        admin.set_password('admin123')
+        db.session.add(admin)
+
+        # Kategorien erstellen
+        categories = [
+            ('starters', 'Vorspeisen', False),
+            ('soups', 'Suppen', False),
+            ('salads', 'Salate', False),
+            ('lunch', 'Mittagsangebot', False),
+            ('fish', 'Fischgerichte', False),
+            ('vegetarian', 'Vegetarische Gerichte', False),
+            ('steaks', 'Steak vom Grill', False),
+            ('desserts', 'Desserts', False),
+            ('softdrinks', 'Alkoholfreie Getränke', True),
+            ('beer', 'Biere', True),
+            ('wine', 'Weine', True),
+            ('spirits', 'Spirituosen', True)
+        ]
         
-        # Prüfe, ob bereits ein Admin existiert
-        if Admin.query.count() == 0:
-            admin = Admin(
-                username='admin',
-                password_hash=generate_password_hash('admin123')
+        for order, (name, display_name, is_drink) in enumerate(categories):
+            category = MenuCategory(
+                name=name,
+                display_name=display_name,
+                is_drink_category=is_drink,
+                order=order,
+                active=True
             )
-            db.session.add(admin)
-            db.session.commit()
+            db.session.add(category)
+
+        # Öffnungszeiten initialisieren
+        days = [
+            ('Montag', True),  # Montag geschlossen
+            ('Dienstag', False, '11:30', '14:00', '17:00', '22:00'),
+            ('Mittwoch', False, '11:30', '14:00', '17:00', '22:00'),
+            ('Donnerstag', False, '11:30', '14:00', '17:00', '22:00'),
+            ('Freitag', False, '11:30', '14:00', '17:00', '22:00'),
+            ('Samstag', False, '11:30', '14:00', '17:00', '22:00'),
+            ('Sonntag', False, '11:30', '14:00', '17:00', '22:00')
+        ]
         
-        # Prüfe, ob bereits Kategorien existieren
-        if MenuCategory.query.count() == 0:
-            categories = [
-                # Speisen
-                ('starters', 'Vorspeisen', False),
-                ('soups', 'Suppen', False),
-                ('salads', 'Salate', False),
-                ('lunch', 'Mittagsangebot', False),
-                ('fish', 'Fischgerichte', False),
-                ('vegetarian', 'Vegetarische Gerichte', False),
-                ('steaks', 'Steak vom Grill', False),
-                ('desserts', 'Desserts', False),
-                # Getränke
-                ('softdrinks', 'Alkoholfreie Getränke', True),
-                ('beer', 'Biere', True),
-                ('wine', 'Weine', True),
-                ('spirits', 'Spirituosen', True)
-            ]
-            
-            for order, (name, display_name, is_drink) in enumerate(categories):
-                category = MenuCategory(
-                    name=name,
-                    display_name=display_name,
-                    is_drink_category=is_drink,
-                    order=order,
-                    active=True
-                )
-                db.session.add(category)
-            db.session.commit()
-        
-        # Prüfe, ob bereits Öffnungszeiten existieren
-        if OpeningHours.query.count() == 0:
-            days = [
-                ('Monday', 'Montag'),
-                ('Tuesday', 'Dienstag'),
-                ('Wednesday', 'Mittwoch'),
-                ('Thursday', 'Donnerstag'),
-                ('Friday', 'Freitag'),
-                ('Saturday', 'Samstag'),
-                ('Sunday', 'Sonntag')
-            ]
-            
-            for day_en, day_de in days:
-                hours = OpeningHours(
-                    day=day_en,
-                    day_display=day_de,
-                    open_time='11:30',
-                    close_time='22:00',
-                    closed=False
-                )
-                db.session.add(hours)
-            db.session.commit()
+        for day_data in days:
+            if len(day_data) == 2:  # Geschlossener Tag
+                day, closed = day_data
+                db.session.add(OpeningHours(
+                    day=day,
+                    closed=closed
+                ))
+            else:  # Tag mit Öffnungszeiten
+                day, closed, open1, close1, open2, close2 = day_data
+                db.session.add(OpeningHours(
+                    day=day,
+                    closed=closed,
+                    open_time_1=open1,
+                    close_time_1=close1,
+                    open_time_2=open2,
+                    close_time_2=close2
+                ))
+
+        db.session.commit()
 
 @app.route('/')
 def home():

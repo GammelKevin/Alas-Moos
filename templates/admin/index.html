@@ -1,19 +1,303 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<h1>Admin Dashboard</h1>
-
-<div class="admin-grid">
-    <div class="admin-card">
-        <h2>Speisekarte verwalten</h2>
-        <p>Fügen Sie neue Gerichte hinzu oder bearbeiten Sie bestehende.</p>
-        <a href="{{ url_for('admin.menu') }}" class="btn btn-primary">Zur Speisekarte</a>
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Abmelden</a>
     </div>
 
-    <div class="admin-card">
-        <h2>Öffnungszeiten</h2>
-        <p>Passen Sie die Öffnungszeiten Ihres Restaurants an.</p>
-        <a href="{{ url_for('admin.opening_hours') }}" class="btn btn-primary">Öffnungszeiten bearbeiten</a>
+    <div class="dashboard-content">
+        <!-- Öffnungszeiten -->
+        <section class="dashboard-section">
+            <h2>Öffnungszeiten</h2>
+            <form method="POST" action="{{ url_for('admin.update_opening_hours') }}" class="opening-hours-form">
+                {% for hour in opening_hours %}
+                <div class="day-row">
+                    <div class="day-name">{{ hour.day }}</div>
+                    <div class="hours-inputs">
+                        <div class="time-slot">
+                            <input type="time" name="open_time_1_{{ hour.id }}" value="{{ hour.open_time_1 }}" {% if hour.closed %}disabled{% endif %}>
+                            <span>bis</span>
+                            <input type="time" name="close_time_1_{{ hour.id }}" value="{{ hour.close_time_1 }}" {% if hour.closed %}disabled{% endif %}>
+                        </div>
+                        <div class="time-slot">
+                            <input type="time" name="open_time_2_{{ hour.id }}" value="{{ hour.open_time_2 }}" {% if hour.closed %}disabled{% endif %}>
+                            <span>bis</span>
+                            <input type="time" name="close_time_2_{{ hour.id }}" value="{{ hour.close_time_2 }}" {% if hour.closed %}disabled{% endif %}>
+                        </div>
+                        <label class="closed-checkbox">
+                            <input type="checkbox" name="closed" value="{{ hour.id }}" {% if hour.closed %}checked{% endif %}>
+                            Geschlossen
+                        </label>
+                    </div>
+                </div>
+                {% endfor %}
+                <button type="submit" class="save-btn">Speichern</button>
+            </form>
+        </section>
+
+        <!-- Menü Verwaltung -->
+        <section class="dashboard-section">
+            <h2>Menü Verwaltung</h2>
+            <div class="menu-controls">
+                <button class="add-btn" onclick="showAddItemForm()">Neues Gericht hinzufügen</button>
+            </div>
+            <div class="menu-items">
+                {% for category in categories %}
+                <div class="category-section">
+                    <h3>{{ category.name }}</h3>
+                    <div class="items-grid">
+                        {% for item in items if item.category_id == category.id %}
+                        <div class="menu-item">
+                            <div class="item-header">
+                                <h4>{{ item.name }}</h4>
+                                <div class="item-controls">
+                                    <button onclick="editItem({{ item.id }})" class="edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteItem({{ item.id }})" class="delete-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="item-description">{{ item.description }}</p>
+                            <p class="item-price">{{ "%.2f"|format(item.price) }}€</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
     </div>
 </div>
+
+<style>
+.admin-dashboard {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+    color: #e19b4c;
+    font-family: 'Playfair Display', serif;
+}
+
+.logout-btn {
+    background: #e19b4c;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #d18b3c;
+}
+
+.dashboard-section {
+    background: #151515;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-section h2 {
+    color: #e19b4c;
+    margin-bottom: 1.5rem;
+    font-family: 'Playfair Display', serif;
+}
+
+/* Öffnungszeiten Styles */
+.opening-hours-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.day-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 1rem;
+    align-items: center;
+}
+
+.day-name {
+    color: #fff;
+    font-weight: 500;
+}
+
+.hours-inputs {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.time-slot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-slot input[type="time"] {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.closed-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+}
+
+.save-btn {
+    background: #e19b4c;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.save-btn:hover {
+    background: #d18b3c;
+}
+
+/* Menü Verwaltung Styles */
+.menu-controls {
+    margin-bottom: 1.5rem;
+}
+
+.add-btn {
+    background: #e19b4c;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.add-btn:hover {
+    background: #d18b3c;
+}
+
+.category-section {
+    margin-bottom: 2rem;
+}
+
+.category-section h3 {
+    color: #fff;
+    margin-bottom: 1rem;
+    font-family: 'Playfair Display', serif;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.menu-item {
+    background: #1a1a1a;
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.item-header h4 {
+    color: #fff;
+    margin: 0;
+}
+
+.item-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-btn,
+.delete-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.edit-btn:hover {
+    color: #e19b4c;
+}
+
+.delete-btn:hover {
+    color: #ff4444;
+}
+
+.item-description {
+    color: #999;
+    margin-bottom: 0.5rem;
+}
+
+.item-price {
+    color: #e19b4c;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .day-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .hours-inputs {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function showAddItemForm() {
+    // Implementierung des Formulars zum Hinzufügen
+}
+
+function editItem(id) {
+    // Implementierung der Bearbeitung
+}
+
+function deleteItem(id) {
+    if (confirm('Möchten Sie dieses Gericht wirklich löschen?')) {
+        fetch(`/admin/menu/delete/${id}`, {
+            method: 'POST'
+        }).then(() => {
+            location.reload();
+        });
+    }
+}
+</script>
 {% endblock %}

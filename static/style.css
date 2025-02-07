@@ -29,81 +29,63 @@ body {
     padding: 0 20px;
 }
 
-/* Loading Screen */
-.loading-screen {
+/* Loading Circle */
+.loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--dark);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #0a0a0a;
     z-index: 9999;
-    transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
-.loading-screen.exit {
-    transform: translateY(-100%);
-    transition-delay: 0.3s;
+.loading-circle {
+    width: 80px;
+    height: 80px;
+    position: relative;
 }
 
-.loading-screen.exit::after {
-    transform: scale(2);
-    opacity: 0;
-}
-
-.loading-screen::after {
+.loading-circle::before,
+.loading-circle::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
-    opacity: 0.1;
-    transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
-}
-
-.loader {
-    width: 100px;
-    height: 100px;
-    position: relative;
-    perspective: 800px;
-    transform-style: preserve-3d;
-}
-
-.loader::before,
-.loader::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
     border-radius: 50%;
-    border: 4px solid transparent;
-    border-top-color: var(--gold);
-    animation: spin 2s linear infinite;
+    border: 2px solid transparent;
 }
 
-.loader::before {
-    border-top-color: var(--gold);
-    animation-delay: -0.5s;
+.loading-circle::before {
+    border-top-color: #e19b4c;
+    animation: spin 1s linear infinite;
 }
 
-.loader::after {
-    border-top-color: var(--gold-light);
-    animation-delay: -1s;
-}
-
-.loader-inner {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 4px solid transparent;
-    border-top-color: rgba(212, 175, 55, 0.3);
+.loading-circle::after {
+    border-right-color: #e19b4c;
     animation: spin 1s linear infinite reverse;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
 }
 
 /* Content Reveal Animations */
@@ -913,61 +895,74 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
-    transform-origin: center;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
 }
 
 .intro-circle {
-    width: 150px;
-    height: 150px;
-    background-color: #0a0a0a;
-    border: 2px solid #e19b4c;
-    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    animation: pulseAndFade 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.intro-circle::before,
+.intro-circle::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #e19b4c;
+    animation: introPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.intro-circle::after {
+    animation-delay: -0.5s;
 }
 
 .intro-text {
     color: #e19b4c;
     font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     opacity: 0;
-    animation: fadeInText 0.5s ease forwards 0.5s;
+    transform: scale(0.9);
+    animation: introText 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards 0.3s;
 }
 
-@keyframes pulseAndFade {
+@keyframes introPulse {
     0% {
-        transform: scale(0.3);
-        opacity: 0;
+        transform: scale(0.8);
+        opacity: 1;
     }
     50% {
-        transform: scale(1.1);
-        opacity: 1;
+        transform: scale(1.2);
+        opacity: 0.5;
     }
     100% {
-        transform: scale(1);
+        transform: scale(0.8);
         opacity: 1;
     }
 }
 
-@keyframes fadeInText {
-    from {
+@keyframes introText {
+    0% {
         opacity: 0;
-        transform: translateY(10px);
+        transform: scale(0.9);
     }
-    to {
+    100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);
     }
 }
 
 .intro-overlay.hidden {
-    transform: scale(2);
     opacity: 0;
-    pointer-events: none;
+    visibility: hidden;
+    transform: scale(1.2);
 }
 
 /* Animations */
@@ -979,6 +974,9 @@ footer {
 }
 
 @keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
     to {
         transform: rotate(360deg);
     }
