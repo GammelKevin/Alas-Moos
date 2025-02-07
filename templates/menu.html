@@ -31,13 +31,13 @@
                                         {% endif %}
                                         <div class="item-tags">
                                             {% if item.vegetarian %}
-                                                <span class="tag vegetarian">Vegetarisch</span>
+                                                <span class="tag vegetarian">🥗 Vegetarisch</span>
                                             {% endif %}
                                             {% if item.vegan %}
-                                                <span class="tag vegan">Vegan</span>
+                                                <span class="tag vegan">🌱 Vegan</span>
                                             {% endif %}
                                             {% if item.spicy %}
-                                                <span class="tag spicy">Scharf</span>
+                                                <span class="tag spicy">🌶️ Scharf</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -51,7 +51,7 @@
 
         <!-- Getränke -->
         <div class="drinks-section">
-            <h2>Getränke</h2>
+            <h2>🍹 Getränke</h2>
             {% for category in categories %}
                 {% if category.is_drink_category %}
                     <section class="menu-section">
@@ -78,23 +78,6 @@
             {% endfor %}
         </div>
     </div>
-
-    <!-- Öffnungszeiten -->
-    <aside class="opening-hours">
-        <h2>Öffnungszeiten</h2>
-        <ul>
-            {% for hour in opening_hours %}
-                <li>
-                    <span class="day">{{ hour.day }}</span>
-                    {% if hour.closed %}
-                        <span class="time">Ruhetag</span>
-                    {% else %}
-                        <span class="time">{{ hour.open_time }} - {{ hour.close_time }} Uhr</span>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    </aside>
 </div>
 
 <style>
@@ -251,48 +234,6 @@
     color: #333;
     font-size: 1.1em;
     margin: 0;
-}
-
-/* Öffnungszeiten */
-.opening-hours {
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-top: 60px;
-}
-
-.opening-hours h2 {
-    color: #c17817;
-    font-size: 1.8em;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.opening-hours ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.opening-hours li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.opening-hours li:last-child {
-    border-bottom: none;
-}
-
-.opening-hours .day {
-    font-weight: 500;
-    color: #333;
-}
-
-.opening-hours .time {
-    color: #666;
 }
 
 @media (max-width: 768px) {

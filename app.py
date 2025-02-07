@@ -107,15 +107,15 @@ def login():
         
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin'))
         else:
             flash('Ungültige Anmeldedaten')
     
     return render_template('login.html')
 
-@app.route('/admin/dashboard')
+@app.route('/admin')
 @login_required
-def admin_dashboard():
+def admin():
     return render_template('admin/index.html')
 
 @app.route('/admin/menu')
