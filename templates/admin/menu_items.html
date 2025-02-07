@@ -1,0 +1,184 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Speisekarte verwalten</h1>
+
+    <!-- Neues Gericht hinzufügen -->
+    <section class="admin-section">
+        <h2>Neues Gericht hinzufügen</h2>
+        <form action="{{ url_for('add_menu_item') }}" method="post" class="admin-form">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Beschreibung</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="price">Preis (€)</label>
+                <input type="number" id="price" name="price" step="0.10" required>
+            </div>
+            <div class="form-group">
+                <label for="category_id">Kategorie</label>
+                <select id="category_id" name="category_id" required>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.display_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="order">Reihenfolge</label>
+                <input type="number" id="order" name="order" required>
+            </div>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="is_drink" name="is_drink">
+                <label for="is_drink">Getränk</label>
+            </div>
+            <button type="submit" class="admin-button">Gericht hinzufügen</button>
+        </form>
+    </section>
+
+    <!-- Bestehende Gerichte -->
+    <section class="admin-section">
+        <h2>Bestehende Gerichte</h2>
+        <div class="items-grid">
+            {% for item in items %}
+            <div class="item-card">
+                <form action="{{ url_for('edit_menu_item', id=item.id) }}" method="post">
+                    <div class="form-group">
+                        <label for="name_{{ item.id }}">Name</label>
+                        <input type="text" id="name_{{ item.id }}" name="name" value="{{ item.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description_{{ item.id }}">Beschreibung</label>
+                        <textarea id="description_{{ item.id }}" name="description" rows="3">{{ item.description }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="price_{{ item.id }}">Preis (€)</label>
+                        <input type="number" id="price_{{ item.id }}" name="price" step="0.10" value="{{ "%.2f"|format(item.price) }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category_{{ item.id }}">Kategorie</label>
+                        <select id="category_{{ item.id }}" name="category_id" required>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == item.category_id %}selected{% endif %}>
+                                {{ category.display_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="order_{{ item.id }}">Reihenfolge</label>
+                        <input type="number" id="order_{{ item.id }}" name="order" value="{{ item.order }}" required>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="is_drink_{{ item.id }}" name="is_drink" {% if item.is_drink %}checked{% endif %}>
+                        <label for="is_drink_{{ item.id }}">Getränk</label>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="active_{{ item.id }}" name="active" {% if item.active %}checked{% endif %}>
+                        <label for="active_{{ item.id }}">Aktiv</label>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="admin-button">Speichern</button>
+                        <button type="button" class="admin-button delete" onclick="deleteItem({{ item.id }})">Löschen</button>
+                    </div>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<form id="deleteForm" method="post" style="display: none;">
+</form>
+
+<style>
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.item-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(225, 155, 76, 0.2);
+}
+
+.item-card:hover {
+    border-color: var(--gold);
+}
+
+.admin-form {
+    max-width: 500px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--light);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(225, 155, 76, 0.2);
+    border-radius: 4px;
+    color: var(--light);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-group label {
+    margin: 0;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.admin-button.delete {
+    background: rgba(255, 68, 68, 0.1);
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.admin-button.delete:hover {
+    background: #ff4444;
+    color: var(--dark);
+}
+</style>
+
+<script>
+function deleteItem(id) {
+    if (confirm('Sind Sie sicher, dass Sie dieses Gericht löschen möchten?')) {
+        const form = document.getElementById('deleteForm');
+        form.action = "{{ url_for('delete_menu_item', id=0) }}".replace('0', id);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

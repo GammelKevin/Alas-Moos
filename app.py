@@ -177,6 +177,111 @@ def save_opening_hours():
     flash('Öffnungszeiten wurden aktualisiert')
     return redirect(url_for('admin'))
 
+@app.route('/admin/menu-categories')
+@login_required
+def admin_menu_categories():
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('admin/menu_categories.html', categories=categories)
+
+@app.route('/admin/menu-categories/add', methods=['POST'])
+@login_required
+def add_menu_category():
+    name = request.form.get('name')
+    display_name = request.form.get('display_name')
+    order = request.form.get('order', type=int)
+    is_drink = request.form.get('is_drink_category') == 'on'
+    
+    category = MenuCategory(
+        name=name,
+        display_name=display_name,
+        order=order,
+        is_drink_category=is_drink
+    )
+    db.session.add(category)
+    db.session.commit()
+    
+    flash('Kategorie wurde hinzugefügt')
+    return redirect(url_for('admin_menu_categories'))
+
+@app.route('/admin/menu-categories/edit/<int:id>', methods=['POST'])
+@login_required
+def edit_menu_category(id):
+    category = MenuCategory.query.get_or_404(id)
+    category.name = request.form.get('name')
+    category.display_name = request.form.get('display_name')
+    category.order = request.form.get('order', type=int)
+    category.is_drink_category = request.form.get('is_drink_category') == 'on'
+    category.active = request.form.get('active') == 'on'
+    
+    db.session.commit()
+    flash('Kategorie wurde aktualisiert')
+    return redirect(url_for('admin_menu_categories'))
+
+@app.route('/admin/menu-categories/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_menu_category(id):
+    category = MenuCategory.query.get_or_404(id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('Kategorie wurde gelöscht')
+    return redirect(url_for('admin_menu_categories'))
+
+@app.route('/admin/menu-items')
+@login_required
+def admin_menu_items():
+    items = MenuItem.query.join(MenuCategory).order_by(MenuCategory.order, MenuItem.order).all()
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('admin/menu_items.html', items=items, categories=categories)
+
+@app.route('/admin/menu-items/add', methods=['POST'])
+@login_required
+def add_menu_item():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    price = request.form.get('price', type=float)
+    category_id = request.form.get('category_id', type=int)
+    order = request.form.get('order', type=int)
+    is_drink = request.form.get('is_drink') == 'on'
+    
+    item = MenuItem(
+        name=name,
+        description=description,
+        price=price,
+        category_id=category_id,
+        order=order,
+        is_drink=is_drink
+    )
+    db.session.add(item)
+    db.session.commit()
+    
+    flash('Gericht wurde hinzugefügt')
+    return redirect(url_for('admin_menu_items'))
+
+@app.route('/admin/menu-items/edit/<int:id>', methods=['POST'])
+@login_required
+def edit_menu_item(id):
+    item = MenuItem.query.get_or_404(id)
+    item.name = request.form.get('name')
+    item.description = request.form.get('description')
+    item.price = request.form.get('price', type=float)
+    item.category_id = request.form.get('category_id', type=int)
+    item.order = request.form.get('order', type=int)
+    item.is_drink = request.form.get('is_drink') == 'on'
+    item.active = request.form.get('active') == 'on'
+    
+    db.session.commit()
+    flash('Gericht wurde aktualisiert')
+    return redirect(url_for('admin_menu_items'))
+
+@app.route('/admin/menu-items/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_menu_item(id):
+    item = MenuItem.query.get_or_404(id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Gericht wurde gelöscht')
+    return redirect(url_for('admin_menu_items'))
+
 with app.app_context():
     init_db()
 

@@ -3,193 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Alas Moos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Admin Panel - Alas Restaurant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --dark: #0a0a0a;
+            --light: #ffffff;
+            --gold: #e19b4c;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background-color: #f5f5f5;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            line-height: 1.6;
             min-height: 100vh;
+        }
+
+        .admin-navbar {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(225, 155, 76, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .admin-navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .sidebar {
-            width: 250px;
-            background-color: #333;
-            color: white;
-            padding: 20px;
-        }
-
-        .sidebar h1 {
-            font-size: 1.5em;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #c17817;
-        }
-
-        .nav-list {
-            list-style: none;
-        }
-
-        .nav-item {
-            margin-bottom: 10px;
-        }
-
-        .nav-item a {
-            color: white;
+        .admin-brand {
+            color: var(--gold);
             text-decoration: none;
-            padding: 10px;
-            display: block;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .nav-item a:hover {
-            background-color: #c17817;
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            background-color: #fff;
-            margin: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .flash-messages {
-            margin-bottom: 20px;
-        }
-
-        .flash-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .flash-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background-color: #c17817;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #a66714;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f8f9fa;
+            font-size: 1.5rem;
             font-weight: 600;
         }
 
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group input[type="time"],
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group textarea {
-            height: 100px;
-            resize: vertical;
-        }
-
-        .form-actions {
-            margin-top: 20px;
+        .admin-nav-links {
             display: flex;
-            gap: 10px;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .admin-nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .admin-nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .admin-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(225, 155, 76, 0.2);
+        }
+
+        .admin-section h2 {
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .admin-button {
+            background: rgba(225, 155, 76, 0.1);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        .admin-button:hover {
+            background: var(--gold);
+            color: var(--dark);
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .flash {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            color: #28a745;
+        }
+
+        .flash-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid #dc3545;
+            color: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-navbar-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .admin-nav-links {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h1>Admin Panel</h1>
-        <ul class="nav-list">
-            <li class="nav-item"><a href="{{ url_for('admin.index') }}">Dashboard</a></li>
-            <li class="nav-item"><a href="{{ url_for('admin.menu') }}">Speisekarte</a></li>
-            <li class="nav-item"><a href="{{ url_for('admin.opening_hours') }}">Öffnungszeiten</a></li>
-            <li class="nav-item"><a href="{{ url_for('logout') }}">Logout</a></li>
-        </ul>
-    </div>
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <a href="{{ url_for('admin') }}" class="admin-brand">Admin Panel</a>
+            <ul class="admin-nav-links">
+                <li><a href="{{ url_for('admin') }}">Öffnungszeiten</a></li>
+                <li><a href="{{ url_for('admin_menu_categories') }}">Kategorien</a></li>
+                <li><a href="{{ url_for('admin_menu_items') }}">Speisekarte</a></li>
+                <li><a href="{{ url_for('home') }}">Zur Website</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <div class="main-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+            <div class="flash flash-success">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
 
-        {% block content %}{% endblock %}
-    </div>
+    {% block content %}{% endblock %}
 </body>
 </html>
