@@ -55,44 +55,25 @@
     </section>
 
     <!-- Öffnungszeiten Section -->
-    <section class="opening-hours-section" id="opening-hours">
+    <section class="opening-hours-section" id="opening-hours" style="margin-bottom: 0; padding-bottom: 0;">
         <div class="container">
             <h2>Öffnungszeiten</h2>
             <div class="opening-hours-grid">
+                {% for hour in opening_hours %}
                 <div class="opening-hours-box">
-                    <h3>Montag</h3>
+                    <h3>{{ hour.day }}</h3>
+                    {% if hour.closed %}
                     <p>Ruhetag</p>
+                    {% else %}
+                    {% if hour.open_time_1 and hour.close_time_1 %}
+                    <p>{{ hour.open_time_1 }} - {{ hour.close_time_1 }}</p>
+                    {% endif %}
+                    {% if hour.open_time_2 and hour.close_time_2 %}
+                    <p>{{ hour.open_time_2 }} - {{ hour.close_time_2 }}</p>
+                    {% endif %}
+                    {% endif %}
                 </div>
-                <div class="opening-hours-box">
-                    <h3>Dienstag</h3>
-                    <p>11:30 - 14:00</p>
-                    <p>17:00 - 22:00</p>
-                </div>
-                <div class="opening-hours-box">
-                    <h3>Mittwoch</h3>
-                    <p>11:30 - 14:00</p>
-                    <p>17:00 - 22:00</p>
-                </div>
-                <div class="opening-hours-box">
-                    <h3>Donnerstag</h3>
-                    <p>11:30 - 14:00</p>
-                    <p>17:00 - 22:00</p>
-                </div>
-                <div class="opening-hours-box">
-                    <h3>Freitag</h3>
-                    <p>11:30 - 14:00</p>
-                    <p>17:00 - 22:00</p>
-                </div>
-                <div class="opening-hours-box">
-                    <h3>Samstag</h3>
-                    <p>11:30 - 14:00</p>
-                    <p>17:00 - 22:00</p>
-                </div>
-                <div class="opening-hours-box">
-                    <h3>Sonntag</h3>
-                    <p>11:30 - 14:00</p>
-                    <p>17:00 - 22:00</p>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>

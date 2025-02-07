@@ -155,6 +155,39 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
+@app.route('/admin')
+@login_required
+def admin():
+    opening_hours = OpeningHours.query.all()
+    return render_template('admin/index.html', opening_hours=opening_hours)
+
+@app.route('/admin/opening-hours', methods=['POST'])
+@login_required
+def save_opening_hours():
+    days = ['montag', 'dienstag', 'mittwoch', 'donnerstag', 'freitag', 'samstag', 'sonntag']
+    
+    for day in days:
+        hours = OpeningHours.query.filter_by(day=day.capitalize()).first()
+        if not hours:
+            hours = OpeningHours(day=day.capitalize())
+            db.session.add(hours)
+        
+        hours.closed = request.form.get(f'{day}_closed') is not None
+        if not hours.closed:
+            hours.open_time_1 = request.form.get(f'{day}_open_1')
+            hours.close_time_1 = request.form.get(f'{day}_close_1')
+            hours.open_time_2 = request.form.get(f'{day}_open_2')
+            hours.close_time_2 = request.form.get(f'{day}_close_2')
+        else:
+            hours.open_time_1 = None
+            hours.close_time_1 = None
+            hours.open_time_2 = None
+            hours.close_time_2 = None
+    
+    db.session.commit()
+    flash('Öffnungszeiten wurden aktualisiert')
+    return redirect(url_for('admin'))
+
 # Initialisiere die Datenbank beim Start
 with app.app_context():
     init_db()
