@@ -78,20 +78,25 @@ def init_db():
 
 @app.route('/')
 def index():
-    categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    menu_items = MenuItem.query.all()
-    opening_hours = OpeningHours.query.order_by(
-        case(
-            (OpeningHours.day == 'Montag', 1),
-            (OpeningHours.day == 'Dienstag', 2),
-            (OpeningHours.day == 'Mittwoch', 3),
-            (OpeningHours.day == 'Donnerstag', 4),
-            (OpeningHours.day == 'Freitag', 5),
-            (OpeningHours.day == 'Samstag', 6),
-            (OpeningHours.day == 'Sonntag', 7)
-        )
-    ).all()
-    return render_template('index.html', categories=categories, menu_items=menu_items, opening_hours=opening_hours)
+    try:
+        categories = MenuCategory.query.order_by(MenuCategory.order).all()
+        menu_items = MenuItem.query.all()
+        opening_hours = OpeningHours.query.order_by(
+            case(
+                (OpeningHours.day == 'Montag', 1),
+                (OpeningHours.day == 'Dienstag', 2),
+                (OpeningHours.day == 'Mittwoch', 3),
+                (OpeningHours.day == 'Donnerstag', 4),
+                (OpeningHours.day == 'Freitag', 5),
+                (OpeningHours.day == 'Samstag', 6),
+                (OpeningHours.day == 'Sonntag', 7)
+            )
+        ).all()
+        return render_template('index.html', categories=categories, menu_items=menu_items, opening_hours=opening_hours)
+    except Exception as e:
+        print(f"Fehler auf der Homepage: {str(e)}")
+        init_db()  # Initialisiere die Datenbank falls sie nicht existiert
+        return redirect(url_for('index'))
 
 @app.route('/admin')
 @login_required
