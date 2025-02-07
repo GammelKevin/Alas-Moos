@@ -21,7 +21,6 @@
             <a href="/" class="active">Home</a>
             <a href="/menu">Speisekarte</a>
             <a href="#about">Über Uns</a>
-            <a href="#kontakt">Reservieren</a>
             <a href="#opening-hours">Öffnungszeiten</a>
         </div>
         <div class="menu-btn">
@@ -33,12 +32,13 @@
 
     {% block content %}
     <!-- Hero Section -->
-    <section class="hero" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ url_for('static', filename='images/hero-bg.jpg') }}') no-repeat center center; background-size: cover; height: 100vh; display: flex; align-items: center; justify-content: center;">
-        <div class="hero-content">
+    <section class="hero">
+        <div class="hero-content" style="position: relative; z-index: 2;">
             <h1>Alas</h1>
             <p>Griechische Spezialitäten in Moos</p>
-            <a href="#kontakt" class="cta-button">Tisch reservieren</a>
         </div>
+        <div class="hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)); z-index: 1;"></div>
+        <div class="hero-background" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('{{ url_for('static', filename='images/hero.jpg') }}') no-repeat center center; background-size: cover; z-index: 0;"></div>
     </section>
 
     <!-- About Section -->
@@ -93,40 +93,6 @@
                     <p>11:30 - 14:00</p>
                     <p>17:00 - 22:00</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Kontakt Section -->
-    <section id="kontakt" class="contact-section">
-        <div class="container">
-            <h2>Kontakt & Reservierung</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <div class="info-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <p>Münchener Str. 127<br>85051 Ingolstadt</p>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-phone"></i>
-                        <p>08441 497797</p>
-                    </div>
-                </div>
-                <form id="reservierung" class="contact-form">
-                    <div class="form-group">
-                        <input type="text" id="name" name="name" placeholder="Name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="email" name="email" placeholder="E-Mail" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" id="phone" name="phone" placeholder="Telefon" required>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Ihre Nachricht" required></textarea>
-                    </div>
-                    <button type="submit" class="btn">Nachricht senden</button>
-                </form>
             </div>
         </div>
     </section>

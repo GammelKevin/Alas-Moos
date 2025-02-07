@@ -193,9 +193,6 @@
                         <li><a href="{{ url_for('menu') }}">Speisekarte</a></li>
                         <li><a href="{{ url_for('home') }}#about">Über uns</a></li>
                         <li><a href="{{ url_for('home') }}#contact">Kontakt</a></li>
-                        {% if current_user.is_authenticated %}
-                        <li><a href="{{ url_for('admin.index') }}">Admin</a></li>
-                        {% endif %}
                     </ul>
                 </div>
             </div>
