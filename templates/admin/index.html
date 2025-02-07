@@ -1,303 +1,229 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="admin-dashboard">
-    <div class="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <a href="{{ url_for('logout') }}" class="logout-btn">Abmelden</a>
-    </div>
+<div class="admin-container">
+    <h1>Admin Panel</h1>
 
-    <div class="dashboard-content">
-        <!-- Öffnungszeiten -->
-        <section class="dashboard-section">
-            <h2>Öffnungszeiten</h2>
-            <div class="container">
-                <h2>Öffnungszeiten verwalten</h2>
-                <form method="POST" action="{{ url_for('admin.save_opening_hours') }}">
-                    <div class="opening-hours-grid">
-                        {% for day in ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'] %}
-                        <div class="opening-hours-box">
-                            <h3>{{ day }}</h3>
-                            <div class="time-slots">
-                                <div class="time-slot">
-                                    <label>Erste Öffnungszeit:</label>
-                                    <input type="time" name="{{ day.lower() }}_open_1" value="{{ opening_hours.get(day.lower(), {}).get('open_1', '') }}">
-                                    <input type="time" name="{{ day.lower() }}_close_1" value="{{ opening_hours.get(day.lower(), {}).get('close_1', '') }}">
-                                </div>
-                                <div class="time-slot">
-                                    <label>Zweite Öffnungszeit:</label>
-                                    <input type="time" name="{{ day.lower() }}_open_2" value="{{ opening_hours.get(day.lower(), {}).get('open_2', '') }}">
-                                    <input type="time" name="{{ day.lower() }}_close_2" value="{{ opening_hours.get(day.lower(), {}).get('close_2', '') }}">
-                                </div>
-                                <div class="ruhetag">
-                                    <label>
-                                        <input type="checkbox" name="{{ day.lower() }}_closed" {% if opening_hours.get(day.lower(), {}).get('closed') %}checked{% endif %}>
-                                        Ruhetag
-                                    </label>
-                                </div>
+    <!-- Öffnungszeiten -->
+    <section class="admin-section">
+        <h2>Öffnungszeiten</h2>
+        <form action="{{ url_for('save_opening_hours') }}" method="post">
+            <div class="opening-hours-grid">
+                {% set days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'] %}
+                {% for day in days %}
+                    {% set day_lower = day.lower() %}
+                    <div class="day-row">
+                        <div class="day-name">{{ day }}</div>
+                        <div class="hours-inputs">
+                            <div class="time-group">
+                                <input type="time" 
+                                       name="{{ day_lower }}_open_1" 
+                                       value="{{ opening_hours[day_lower]['open_1'] if opening_hours[day_lower]['open_1'] }}"
+                                       {% if opening_hours[day_lower]['closed'] %}disabled{% endif %}
+                                >
+                                <span>-</span>
+                                <input type="time" 
+                                       name="{{ day_lower }}_close_1" 
+                                       value="{{ opening_hours[day_lower]['close_1'] if opening_hours[day_lower]['close_1'] }}"
+                                       {% if opening_hours[day_lower]['closed'] %}disabled{% endif %}
+                                >
+                            </div>
+                            <div class="time-group">
+                                <input type="time" 
+                                       name="{{ day_lower }}_open_2" 
+                                       value="{{ opening_hours[day_lower]['open_2'] if opening_hours[day_lower]['open_2'] }}"
+                                       {% if opening_hours[day_lower]['closed'] %}disabled{% endif %}
+                                >
+                                <span>-</span>
+                                <input type="time" 
+                                       name="{{ day_lower }}_close_2" 
+                                       value="{{ opening_hours[day_lower]['close_2'] if opening_hours[day_lower]['close_2'] }}"
+                                       {% if opening_hours[day_lower]['closed'] %}disabled{% endif %}
+                                >
+                            </div>
+                            <div class="closed-checkbox">
+                                <input type="checkbox" 
+                                       id="{{ day_lower }}_closed" 
+                                       name="{{ day_lower }}_closed"
+                                       {% if opening_hours[day_lower]['closed'] %}checked{% endif %}
+                                       onchange="toggleTimeInputs(this, '{{ day_lower }}')"
+                                >
+                                <label for="{{ day_lower }}_closed">Geschlossen</label>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
-                    <button type="submit" class="btn btn-primary">Speichern</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Menü Verwaltung -->
-        <section class="dashboard-section">
-            <h2>Menü Verwaltung</h2>
-            <div class="menu-controls">
-                <button class="add-btn" onclick="showAddItemForm()">Neues Gericht hinzufügen</button>
-            </div>
-            <div class="menu-items">
-                {% for category in categories %}
-                <div class="category-section">
-                    <h3>{{ category.name }}</h3>
-                    <div class="items-grid">
-                        {% for item in items if item.category_id == category.id %}
-                        <div class="menu-item">
-                            <div class="item-header">
-                                <h4>{{ item.name }}</h4>
-                                <div class="item-controls">
-                                    <button onclick="editItem({{ item.id }})" class="edit-btn">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button onclick="deleteItem({{ item.id }})" class="delete-btn">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <p class="item-description">{{ item.description }}</p>
-                            <p class="item-price">{{ "%.2f"|format(item.price) }}€</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
                 {% endfor %}
             </div>
-        </section>
-    </div>
+            <button type="submit" class="save-button">Speichern</button>
+        </form>
+    </section>
+
+    <!-- Speisekarte -->
+    <section class="admin-section">
+        <h2>Speisekarte</h2>
+        <div class="menu-controls">
+            <a href="{{ url_for('admin_menu_categories') }}" class="admin-button">Kategorien verwalten</a>
+            <a href="{{ url_for('admin_menu_items') }}" class="admin-button">Gerichte verwalten</a>
+        </div>
+    </section>
 </div>
 
 <style>
-.admin-dashboard {
-    padding: 2rem;
+.admin-container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 2rem;
 }
 
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.dashboard-header h1 {
-    color: #e19b4c;
-    font-family: 'Playfair Display', serif;
-}
-
-.logout-btn {
-    background: #e19b4c;
-    color: #fff;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-}
-
-.logout-btn:hover {
-    background: #d18b3c;
-}
-
-.dashboard-section {
-    background: #151515;
-    border-radius: 8px;
+.admin-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
     padding: 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(225, 155, 76, 0.2);
 }
 
-.dashboard-section h2 {
-    color: #e19b4c;
+.admin-section h2 {
+    color: var(--gold);
     margin-bottom: 1.5rem;
-    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
 }
 
-/* Öffnungszeiten Styles */
 .opening-hours-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.opening-hours-box {
-    background: #f5f5f5;
-    padding: 1.5rem;
-    border-radius: 8px;
-}
-
-.opening-hours-box h3 {
-    margin-bottom: 1rem;
-    color: #333;
-}
-
-.time-slots {
-    display: flex;
-    flex-direction: column;
     gap: 1rem;
 }
 
-.time-slot {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.day-row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 5px;
 }
 
-.time-slot label {
+.day-name {
+    color: var(--light);
     font-weight: 500;
-    color: #666;
 }
 
-.time-slot input[type="time"] {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
+.hours-inputs {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.ruhetag {
-    margin-top: 1rem;
-}
-
-.ruhetag label {
+.time-group {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    cursor: pointer;
 }
 
-/* Menü Verwaltung Styles */
-.menu-controls {
-    margin-bottom: 1.5rem;
-}
-
-.add-btn {
-    background: #e19b4c;
-    color: #fff;
-    border: none;
-    padding: 0.75rem 1.5rem;
+.time-group input[type="time"] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(225, 155, 76, 0.2);
     border-radius: 4px;
+    color: var(--light);
+    padding: 0.5rem;
+    width: 130px;
+}
+
+.time-group input[type="time"]:disabled {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
+.time-group span {
+    color: var(--light);
+}
+
+.closed-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.closed-checkbox label {
+    color: var(--light);
+}
+
+.save-button {
+    background: var(--gold);
+    color: var(--dark);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 5px;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 2rem;
 }
 
-.add-btn:hover {
-    background: #d18b3c;
+.save-button:hover {
+    background: #c17b3c;
 }
 
-.category-section {
-    margin-bottom: 2rem;
-}
-
-.category-section h3 {
-    color: #fff;
-    margin-bottom: 1rem;
-    font-family: 'Playfair Display', serif;
-}
-
-.items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+.menu-controls {
+    display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.menu-item {
-    background: #1a1a1a;
-    border-radius: 6px;
-    padding: 1rem;
+.admin-button {
+    background: rgba(225, 155, 76, 0.1);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
 }
 
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.item-header h4 {
-    color: #fff;
-    margin: 0;
-}
-
-.item-controls {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.edit-btn,
-.delete-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.edit-btn:hover {
-    color: #e19b4c;
-}
-
-.delete-btn:hover {
-    color: #ff4444;
-}
-
-.item-description {
-    color: #999;
-    margin-bottom: 0.5rem;
-}
-
-.item-price {
-    color: #e19b4c;
-    font-weight: 500;
+.admin-button:hover {
+    background: var(--gold);
+    color: var(--dark);
 }
 
 @media (max-width: 768px) {
     .day-row {
         grid-template-columns: 1fr;
     }
-    
+
     .hours-inputs {
         flex-direction: column;
-        align-items: flex-start;
+        gap: 1rem;
     }
-    
-    .items-grid {
-        grid-template-columns: 1fr;
+
+    .time-group {
+        width: 100%;
+        justify-content: space-between;
     }
 }
 </style>
 
 <script>
-function showAddItemForm() {
-    // Implementierung des Formulars zum Hinzufügen
+function toggleTimeInputs(checkbox, day) {
+    const timeInputs = document.querySelectorAll(`input[name^="${day}_"]`);
+    timeInputs.forEach(input => {
+        if (input.type === 'time') {
+            input.disabled = checkbox.checked;
+        }
+    });
 }
 
-function editItem(id) {
-    // Implementierung der Bearbeitung
-}
-
-function deleteItem(id) {
-    if (confirm('Möchten Sie dieses Gericht wirklich löschen?')) {
-        fetch(`/admin/menu/delete/${id}`, {
-            method: 'POST'
-        }).then(() => {
-            location.reload();
-        });
-    }
-}
+// Initialize time inputs state
+document.addEventListener('DOMContentLoaded', () => {
+    const days = ['montag', 'dienstag', 'mittwoch', 'donnerstag', 'freitag', 'samstag', 'sonntag'];
+    days.forEach(day => {
+        const checkbox = document.getElementById(`${day}_closed`);
+        if (checkbox) {
+            toggleTimeInputs(checkbox, day);
+        }
+    });
+});
 </script>
 {% endblock %}

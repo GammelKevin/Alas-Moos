@@ -26,6 +26,25 @@ class OpeningHours(db.Model):
     close_time_2 = db.Column(db.String(5))
     closed = db.Column(db.Boolean, default=False)
 
+class MenuCategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    display_name = db.Column(db.String(50), nullable=False)
+    order = db.Column(db.Integer)
+    is_drink_category = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
+    items = db.relationship('MenuItem', backref='category', lazy=True)
+
+class MenuItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    price = db.Column(db.Float, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('menu_category.id'), nullable=False)
+    order = db.Column(db.Integer)
+    active = db.Column(db.Boolean, default=True)
+    is_drink = db.Column(db.Boolean, default=False)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -40,7 +59,7 @@ def init_db():
             password_hash=generate_password_hash('admin123')
         )
         db.session.add(admin_user)
-        
+    
     # Initialisiere Öffnungszeiten, wenn sie noch nicht existieren
     days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
     for day in days:
@@ -54,6 +73,23 @@ def init_db():
                 closed=True if day == 'Montag' else False
             )
             db.session.add(hours)
+
+    # Initialisiere Menü-Kategorien, wenn sie noch nicht existieren
+    if not MenuCategory.query.first():
+        categories = [
+            ('vorspeisen', 'Vorspeisen', 1, False),
+            ('hauptspeisen', 'Hauptspeisen', 2, False),
+            ('desserts', 'Desserts', 3, False),
+            ('getraenke', 'Getränke', 4, True)
+        ]
+        for name, display_name, order, is_drink in categories:
+            category = MenuCategory(
+                name=name,
+                display_name=display_name,
+                order=order,
+                is_drink_category=is_drink
+            )
+            db.session.add(category)
     
     db.session.commit()
 
@@ -77,7 +113,8 @@ def home():
 
 @app.route('/menu')
 def menu():
-    return render_template('menu.html')
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    return render_template('menu.html', categories=categories)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
